@@ -1,0 +1,66 @@
+package com.innometrics.integrationapp.utils;
+
+
+import com.innometrics.integrationapp.constants.ProfileCloudOptions;
+import com.innometrics.integrationapp.constants.Resources;
+
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * @author andrew, Innometrics
+ */
+public class RestURI {
+    private final StringBuilder stringBuilder;
+
+    public RestURI(String hostWithVersion) {
+        stringBuilder = new StringBuilder(hostWithVersion);
+    }
+
+    public RestURI(URL hostWithVersion) {
+        this(hostWithVersion.toString());
+    }
+
+    public RestURI withResource(Resources resourceName, String resourceValue) {
+        stringBuilder.append("/").append(urlEncode(resourceName.name())).append("/").append(urlEncode(resourceValue));
+        return this;
+    }
+
+    public RestURI withResources(Resources resourceName) {
+        stringBuilder.append("/").append(urlEncode(resourceName.name()));
+        return this;
+    }
+
+    public static String urlEncode(String input) {
+        try {
+            return URLEncoder.encode(input, Charset.defaultCharset().name());
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public URL build(Map<ProfileCloudOptions, String> parameters) throws MalformedURLException {
+        for (ProfileCloudOptions paraKey : parameters.keySet()) {
+            String dim = "&";
+            if (stringBuilder.indexOf("?") == -1) {
+                dim = "?";
+            }
+            stringBuilder.append(dim).append(urlEncode(paraKey.name())).append("=").append(urlEncode(parameters.get(paraKey)));
+        }
+        return new URL(stringBuilder.toString());
+    }
+
+    public URL build() throws MalformedURLException {
+        return build(new HashMap<ProfileCloudOptions, String>(0));
+    }
+
+    @Override
+    public String toString() {
+        return stringBuilder.toString();
+    }
+}
