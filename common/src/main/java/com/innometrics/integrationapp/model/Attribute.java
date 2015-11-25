@@ -1,13 +1,14 @@
 package com.innometrics.integrationapp.model;
 
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class Attribute {
 
     private String collectApp;
     private String section;
-    private Map<String, Object> data;
+    private Map<String, Object> data =new HashMap<>();
 
     public Attribute() {
     }

@@ -56,8 +56,16 @@ public class Profile {
         if(attributes == null) {
             attributes = new ArrayList<Attribute>();
         }
-
         this.attributes = attributes;
+    }
+    public void setAttributes( String collectApp,String section , String name , Object value) {
+
+        if(attributes == null) {
+            attributes = new ArrayList<Attribute>();
+        }
+        Attribute attribute= new Attribute(collectApp,section);
+        attribute.getData().put(name,value);
+        this.attributes.add(attribute);
     }
 
 }

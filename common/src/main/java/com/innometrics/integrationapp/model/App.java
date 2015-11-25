@@ -8,21 +8,10 @@ public class App {
 
     private String id;
 
-
     private Map<String, Object> custom = new HashMap<>();
 
     private List<String> contacts;
     private Map<String, String> settings = new HashMap<>();
-
-    /**
-     * This method will be removed in the near future. Please use custom instead.
-     * @return
-     */
-
-    /**
-     * This method will be removed in the near future. Please use custom instead.
-     * @param rules
-     */
 
     public String getId() {
         return id;
@@ -31,11 +20,6 @@ public class App {
     public void setId(String id) {
         this.id = id;
     }
-
-    /**
-     * This method will be removed in the near future. Please use custom instead.
-     * @param settings
-     */
 
     public List<String> getContacts() {
         return contacts;
