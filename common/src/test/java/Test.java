@@ -1,7 +1,7 @@
 import com.innometrics.integrationapp.InnoHelper;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
-import com.innometrics.integrationapp.authentication.AppKey;
 import com.innometrics.integrationapp.model.*;
+import com.innometrics.integrationapp.utils.InnoHelperUtils;
 
 import java.net.MalformedURLException;
 import java.util.HashMap;
@@ -14,10 +14,15 @@ import java.util.concurrent.FutureTask;
  */
 public class Test {
     public static void main(String[] args) throws MalformedURLException, ExecutionException, InterruptedException {
-        InnoHelper profileCloud = new InnoHelper("http://api.innomdc.com");
-        profileCloud.withAuth(new AppKey("89oXs4UmZ325uDuA"));
-        App app =   profileCloud.getApp("4", "bucket1", "sql-connector");
-//        RulesEntry[] rulesEntry = app.getCustom();
+        Map <String,String> config = new HashMap<>();
+        config.put(InnoHelperUtils.API_SERVER,"http://api.innomdc.com");
+        config.put(InnoHelperUtils.APP_KEY,"89oXs4UmZ325uDuA");
+        config.put(InnoHelperUtils.BUCKET_ID,"bucket1");
+        config.put(InnoHelperUtils.COMPANY_ID,"4");
+        config.put(InnoHelperUtils.APP_ID,"sql-connector");
+
+        InnoHelper innoHelper= new InnoHelper(config);
+        RulesEntry[] rulesEntries = innoHelper.getCustom("rules", RulesEntry[].class);
         Profile profile=  new Profile();
         Session session = new Session();
         Event event =new Event();
@@ -36,10 +41,11 @@ public class Test {
         Attribute attribute = new Attribute("asdasd","asdad");
         attribute.setData(data);
         profile.getAttributes().add(attribute);
-        profile.setId("322");
+        profile.setId("777");
 
-        FutureTask futureTask = profileCloud.createProfile("4", "bucket1", profile);
-        Profile profile1= profileCloud.getProfile("4", "bucket1", "322");
+
+        FutureTask futureTask = innoHelper.createProfile(profile);
+        Profile profile1= innoHelper.getProfile("322");
         futureTask.cancel(true);
         System.out.println();
     }

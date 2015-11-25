@@ -2,8 +2,12 @@ package com.innometrics.integrationapp;
 
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.MediaType;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.innometrics.cache.Cache;
 import com.innometrics.cache.guava.GuavaMemoryCache;
+import com.innometrics.integrationapp.appsettings.RulesEntry;
+import com.innometrics.integrationapp.authentication.AppKey;
 import com.innometrics.integrationapp.authentication.AuthMethod;
 import com.innometrics.integrationapp.constants.ProfileCloudOptions;
 import com.innometrics.integrationapp.httpclient.NativeHttpClient;
@@ -45,6 +49,12 @@ public class InnoHelper implements Serializable {
     public static final int DEFAULT_SIZE = 1000;
     private static volatile long REQ_DELAY = 0;
     private static volatile long LAST_REQ_TS = 0;
+    Map<String,String> config;
+
+    public InnoHelper(Map<String, String> config) throws MalformedURLException {  // todo  validate ,delete constructors
+        this(config.get(InnoHelperUtils.API_SERVER),DEFAULT_PORT,new AppKey(config.get(InnoHelperUtils.APP_KEY)));
+        this.config = config;
+    }
 
     public InnoHelper(String host, int port, int cacheSize, int cacheTTL) throws MalformedURLException {
         this(host, port, null, cacheSize, cacheTTL);
@@ -73,6 +83,7 @@ public class InnoHelper implements Serializable {
         withHeader(HttpHeaders.ACCEPT, MediaType.JSON_UTF_8.toString());
         withAuth(auth);
     }
+
 
     public InnoHelper withAuth(AuthMethod auth) {
         if (auth != null) {
@@ -115,21 +126,19 @@ public class InnoHelper implements Serializable {
         }
     }
 
-    public App getApp(String companyId, String bucketId, String appId) throws ExecutionException, InterruptedException {
-        return getApp(companyId, bucketId, appId, null, null);
-    }
 
-    public App getApp(String companyId, String bucketId, String appId, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws ExecutionException, InterruptedException {
+
+    public App getApp() throws ExecutionException, InterruptedException {
         return getObject(new RestURI(hostWithVersion)
-                .withResource(companies, companyId)
-                .withResource(buckets, bucketId)
-                .withResource(apps, appId), App.class, tmpParams, tmpHeaders);
+                .withResource(companies, config.get(InnoHelperUtils.COMPANY_ID))
+                .withResource(buckets,  config.get(InnoHelperUtils.BUCKET_ID))
+                .withResource(apps,  config.get(InnoHelperUtils.APP_ID)), App.class, null, null);
     }
 
 
 
-    public Profile getProfile(String companyId, String bucketId, String profileId) throws InterruptedException, ExecutionException {
-        return getProfile(companyId, bucketId, profileId, null, null);
+    public Profile getProfile( String profileId) throws InterruptedException, ExecutionException {
+        return getProfile(config.get(InnoHelperUtils.COMPANY_ID),config.get(InnoHelperUtils.BUCKET_ID), profileId, null, null);
     }
 
     public Profile getProfile(String companyId, String bucketId, String profileId, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws InterruptedException, ExecutionException {
@@ -150,10 +159,11 @@ public class InnoHelper implements Serializable {
                 .withResource(profiles, profile.getId()), profile, Profile.class, tmpParams, tmpHeaders);
     }
 
-    public FutureTask<Pair<Integer, Profile>> createProfile(String companyId, String bucketId, Profile profile) throws ExecutionException {
-        return createProfile(companyId, bucketId, profile, null, null);
+    public FutureTask<Pair<Integer, Profile>> createProfile( Profile profile) throws ExecutionException {
+        return createProfile(config.get(InnoHelperUtils.COMPANY_ID),config.get(InnoHelperUtils.BUCKET_ID), profile, null, null);
     }
 
+    // todo
     public FutureTask<Pair<Integer, Profile>> createProfile(String companyId, String bucketId, Profile profile, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws ExecutionException {
         return postObject(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
@@ -186,15 +196,15 @@ public class InnoHelper implements Serializable {
     }
 
 
-    public Segment getSegment(String companyId, String bucketId, String segmentId, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws InterruptedException, ExecutionException {
+    public Segment getSegment(String segmentId, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws InterruptedException, ExecutionException {
         return getObject(new RestURI(hostWithVersion)
-                .withResource(companies, companyId)
-                .withResource(buckets, bucketId)
+                .withResource(companies, config.get(InnoHelperUtils.COMPANY_ID))
+                .withResource(buckets, config.get(InnoHelperUtils.BUCKET_ID))
                 .withResource(segments, segmentId), Segment.class, tmpParams, tmpHeaders);
     }
 
-    public Segment getSegment(String companyId, String bucketId, String segmentId) throws InterruptedException, ExecutionException {
-        return getSegment(companyId, bucketId, segmentId, null, null);
+    public Segment getSegment(String segmentId) throws InterruptedException, ExecutionException {
+        return getSegment( segmentId, null, null);
     }
     public IqlResult[] evaluateProfile(String companyId, String bucketId, String profileId, boolean doFiltering, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws InterruptedException, ExecutionException,  IqlSyntaxException {
         Segment[] segments = getSegments(companyId, bucketId, tmpParams, tmpHeaders);
@@ -212,11 +222,11 @@ public class InnoHelper implements Serializable {
 
 
     public IqlResult evaluateProfile(String companyId, String bucketId, String profileId, String segmentId, boolean doFiltering, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws InterruptedException, ExecutionException, IqlSyntaxException {
-        return evaluateProfile(getProfile(companyId, bucketId, profileId, tmpParams, tmpHeaders), getSegment(companyId, bucketId, segmentId, tmpParams, tmpHeaders), doFiltering);
+        return evaluateProfile(getProfile(companyId, bucketId, profileId, tmpParams, tmpHeaders), getSegment( segmentId, tmpParams, tmpHeaders), doFiltering);
     }
 
-    public IqlResult evaluateProfile(String companyId, String bucketId, String profileId, String segmentId, boolean doFiltering) throws InterruptedException, ExecutionException, IqlSyntaxException {
-        return evaluateProfile(getProfile(companyId, bucketId, profileId), getSegment(companyId, bucketId, segmentId), doFiltering);
+    public IqlResult evaluateProfile( String profileId, String segmentId, boolean doFiltering) throws InterruptedException, ExecutionException, IqlSyntaxException {
+        return evaluateProfile(getProfile( profileId), getSegment( segmentId), doFiltering);
     }
 
     public IqlResult evaluateProfile(Profile profile, Segment segment, boolean doFiltering) throws  IqlSyntaxException {
@@ -299,4 +309,11 @@ public class InnoHelper implements Serializable {
         }
     }
 
+    public <T>  T getCustom(String key, Class<T> aClass) throws ExecutionException, InterruptedException {
+        return InnoHelperUtils.getGson().fromJson(getCustom(key),aClass);
+    }
+
+    public JsonElement getCustom(String key) throws ExecutionException, InterruptedException {
+        return  getApp().getCustom().get(key);
+    }
 }
