@@ -51,7 +51,7 @@ public class InnoHelper implements Serializable {
     private static volatile long LAST_REQ_TS = 0;
     Map<String,String> config;
 
-    public InnoHelper(Map<String, String> config) throws MalformedURLException {  // todo  validate ,delete constructors
+    public InnoHelper(Map<String, String> config) throws MalformedURLException {  // todo  validate config,delete constructors
         this(config.get(InnoHelperUtils.API_SERVER),DEFAULT_PORT,new AppKey(config.get(InnoHelperUtils.APP_KEY)));
         this.config = config;
     }
@@ -71,7 +71,6 @@ public class InnoHelper implements Serializable {
     public InnoHelper(String host, int port, AuthMethod auth) throws MalformedURLException {
         this(host, port, auth, DEFAULT_SIZE, DEFAULT_TTL);
     }
-
 
     public InnoHelper(String host, int port, AuthMethod auth, int cacheSize, int cacheTTL) throws MalformedURLException {
         if (!host.startsWith("http")) {
@@ -148,8 +147,8 @@ public class InnoHelper implements Serializable {
                 .withResource(profiles, profileId), Profile.class, false, tmpParams, tmpHeaders);
     }
 
-    public FutureTask<Pair<Integer, Profile>> updateProfile(String companyId, String bucketId, Profile profile) throws ExecutionException {
-        return updateProfile(companyId, bucketId, profile, null, null);
+    public FutureTask<Pair<Integer, Profile>> updateProfile( Profile profile) throws ExecutionException {
+        return updateProfile(config.get(InnoHelperUtils.COMPANY_ID),config.get(InnoHelperUtils.BUCKET_ID), profile, null, null);
     }
 
     public FutureTask<Pair<Integer, Profile>> updateProfile(String companyId, String bucketId, Profile profile, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws ExecutionException {
@@ -180,8 +179,8 @@ public class InnoHelper implements Serializable {
                 .withResource(profiles, canonicalProfile), mergeProfile, Profile.class, tmpParams, tmpHeaders);
     }
 
-    public FutureTask<Pair<Integer, Profile>> mergeProfile(String companyId, String bucketId, String canonicalProfile, String... tempProfiles) throws ExecutionException {
-        return mergeProfile(companyId, bucketId, canonicalProfile, null, null, tempProfiles);
+    public FutureTask<Pair<Integer, Profile>> mergeProfile( String canonicalProfile, String... tempProfiles) throws ExecutionException {
+        return mergeProfile(config.get(InnoHelperUtils.COMPANY_ID),config.get(InnoHelperUtils.BUCKET_ID), canonicalProfile, null, null, tempProfiles);
     }
 
     public Segment[] getSegments(String companyId, String bucketId, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws InterruptedException, ExecutionException {
