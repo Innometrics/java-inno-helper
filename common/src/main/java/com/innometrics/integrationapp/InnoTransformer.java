@@ -142,7 +142,7 @@ public class InnoTransformer {
         final Event event = profile.getSessions().get(0).getEvents().get(0);
 
 //        final QueueEventMeta meta = queueEvent.meta;
-        final CrossSystemMessage msg = new CrossSystemMessage();
+//        final CrossSystemMessage msg = new CrossSystemMessage();
         //Setting id from canonical id
 
 //        for (FieldSetsEntry fieldSet : rulesEntry.getFieldSets()) {
@@ -177,7 +177,7 @@ public class InnoTransformer {
 //                        toAdd.set(field.getFieldName(), getMetaValue(getValueRef(field), queueEvent));
 //                        break;
 //                    default:
-//                        throw new UnsupportedFiledValueTypeException("com.innometrics.model.company.app.FieldsEntry[type]=" + field.getType() + " Not supported");
+//                        throw new UnsupportedFiledValueTypeException("com.innometrics.model.companyId.app.FieldsEntry[type]=" + field.getType() + " Not supported");
 //                }
 //            }
 //            if (toAdd.size() > 0) {

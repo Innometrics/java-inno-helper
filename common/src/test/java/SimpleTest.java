@@ -3,7 +3,6 @@ import com.innometrics.integrationapp.InnoTransformer;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.model.*;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,7 +10,6 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 
 /**
  * Created by killpack on 18.11.15.
@@ -106,4 +104,6 @@ public class SimpleTest {
 
     private class UserSettingModel {
     }
+
+
 }
