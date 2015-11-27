@@ -1,10 +1,12 @@
 package com.innometrics.integrationapp;
 
+import com.innometrics.integrationapp.appsettings.FieldSetsEntry;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.model.Attribute;
 import com.innometrics.integrationapp.model.Event;
 import com.innometrics.integrationapp.model.Profile;
+import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import jdk.nashorn.internal.ir.ObjectNode;
 
 import java.util.ArrayList;
@@ -17,17 +19,16 @@ import java.util.concurrent.ExecutionException;
  * Created by killpack on 26.11.15.
  */
 public class InnoTransformer {
-    RulesEntry[] rulesEntries ;
+    Map<String, RulesEntry> rulesEntries = new HashMap<>();
     public static final String
             PROFILE_ATTRIBUTE = "profileAttribute",
             PROFILE_ID = "profileId",
-            PROFILE_SIZE = "profileSize",
             EVENT_VALUE = "eventValue",
             SESSION_VALUE = "sessionValue",
             STATIC_VALUE = "static",
             MACRO_VALUE = "macro",
             META_VALUE = "meta";
-     static final String
+    static final String
             MARCO_TIMESTAMP_NOW = "timestamp_now",
             MARCO_TIMESTAMP_EVENT = "timestamp_event",
             MARCO_REQUEST_IP = "request_ip",
@@ -41,27 +42,10 @@ public class InnoTransformer {
             META_COLLECT_APP = "collect_app",
             META_SECTION = "section";
 
+    public static final String MAPPING_SET_NAME = "mapping";
 
 
-//    private static String getValueRef(FieldsEntry field) throws CrossSystemMessageProcessingException {
-//        if (field.getValueRef() == null) throw new CrossSystemMessageProcessingException(String.format("ValueRef is missing for field: %s", field.getFieldName()));
-//        return field.getValueRef().asText();
-//    }
-//
-//    private static JsonNode getUserAttribute(List<Attribute> attributes, String valueLocation) {
-//        String[] layers = valueLocation.split("/");
-//        for (Attribute attribute : attributes) {
-//            if (attribute.getCollectApp().equals(layers[0]) && attribute.getSection().equals(layers[1])) {
-//                return attribute.getData().get(layers[2]);
-//            }
-//        }
-//        return null;
-//    }
-//
-//    private static JsonNode getEventValue(Event input, String valueLocation) {
-//        return input.getData().get(valueLocation);
-//    }
-//
+    //
 //    /**
 //     * Main access point for Marco Value
 //     *
@@ -128,69 +112,105 @@ public class InnoTransformer {
 //    }
 //
     public InnoTransformer(RulesEntry[] rulesEntries) {
-        this.rulesEntries = rulesEntries;
+        for (RulesEntry rulesEntry : rulesEntries) {
+            this.rulesEntries.put(rulesEntry.getEvent(), rulesEntry);
+        }
     }
 
-    public InnoTransformer (InnoHelper innoHelper) throws ExecutionException, InterruptedException {
-        rulesEntries = innoHelper.getCustom("rules",RulesEntry[].class);
+    public InnoTransformer(InnoHelper innoHelper) throws ExecutionException, InterruptedException {
+        this(innoHelper.getCustom("rules", RulesEntry[].class));
     }
 
-    public Map<String,Object>fromProfile(Profile profile){
-        Map <String,Object> result = new HashMap<>();
+    public Map<String, Object> fromProfile(Profile profile) {
+        Map<String, Object> result = new HashMap<>();
+        RulesEntry rulesEntry = rulesEntries.get(InnoHelperUtils.getFullFirstEventName(profile));
+        if (rulesEntry == null) {
+            return result;
+        }
         final List<Attribute> attributes = profile.getAttributes();
-        final Map<String,Object> sessionData = profile.getSessions().get(0).getData();
+        final Map<String, Object> sessionData = profile.getSessions().get(0).getData();
         final Event event = profile.getSessions().get(0).getEvents().get(0);
 
-//        final QueueEventMeta meta = queueEvent.meta;
-//        final CrossSystemMessage msg = new CrossSystemMessage();
-        //Setting id from canonical id
-
-//        for (FieldSetsEntry fieldSet : rulesEntry.getFieldSets()) {
-//            String outGoingFieldName = fieldSet.getSetName();
-//            ObjectNode toAdd = getObjectMapper().createObjectNode();
-//            for (FieldsEntry field : fieldSet.getFields()) {
-//                if (field == null || field.getType() == null) throw new CrossSystemMessageProcessingException(String.format("Field or field type is null for rule %s [%s]", rulesEntry.getName(), rulesEntry.getId()));
-//                switch (field.getType()) {
-//                    case PROFILE_ATTRIBUTE:
-//                        toAdd.set(field.getFieldName(), getUserAttribute(attributes, getValueRef(field)));
-//                        break;
-//                    case PROFILE_ID:
-//                        toAdd.put(field.getFieldName(), profile.getId());
-//                        break;
-//                    case PROFILE_SIZE:
-//                        toAdd.put(field.getFieldName(), queueEvent.meta.profileSize);
-//                        break;
-//                    case EVENT_VALUE:
-//                        toAdd.set(field.getFieldName(), getEventValue(event, getValueRef(field)));
-//                        break;
-//                    case SESSION_VALUE:
-//                        toAdd.set(field.getFieldName(), sessionData.get(getValueRef(field)));
-//                        break;
-//                    case STATIC_VALUE:
-//                        toAdd.set(field.getFieldName(), field.getValueRef());
-//                        break;
-//                    case MACRO_VALUE:
-//                        toAdd.set(field.getFieldName(), getMarcoValue(getValueRef(field), meta.request, event));
-//                        break;
-//                    case META_VALUE:
-//                        //TODO: to be fixed
-//                        toAdd.set(field.getFieldName(), getMetaValue(getValueRef(field), queueEvent));
-//                        break;
-//                    default:
+//
+        for (FieldSetsEntry fieldSet : rulesEntry.getFieldSets()) {
+            String outGoingFieldName = fieldSet.getSetName();
+            if (outGoingFieldName.equals(MAPPING_SET_NAME)) {
+                for (FieldsEntry field : fieldSet.getFields()) {
+                    if (field == null || field.getType() == null)
+                        throw new CrossSystemMessageProcessingException(String.format("Field or field type is null for rule %s [%s]", rulesEntry.getName(), rulesEntry.getId()));
+                    switch (field.getType()) {
+                        case PROFILE_ATTRIBUTE:
+                            result.put(field.getFieldName(), getUserAttribute(attributes, getValueRef(field)));
+                            break;
+                        case PROFILE_ID:
+                            result.put(field.getFieldName(), profile.getId());
+                            break;
+                        case EVENT_VALUE:
+                            result.put(field.getFieldName(), getEventValue(event, getValueRef(field)));
+                            break;
+                        case SESSION_VALUE:
+                            result.put(field.getFieldName(), sessionData.get(getValueRef(field)));
+                            break;
+                        case STATIC_VALUE:
+                            result.put(field.getFieldName(), field.getValueRef());
+                            break;
+                        case MACRO_VALUE:
+                            result.put(field.getFieldName(), getMarcoValue(getValueRef(field), meta.request, event));
+                            break;
+                        case META_VALUE:
+                            //TODO: to be fixed
+                            result.put(field.getFieldName(), getMetaValue(getValueRef(field), queueEvent));
+                            break;
+                        default:
 //                        throw new UnsupportedFiledValueTypeException("com.innometrics.model.companyId.app.FieldsEntry[type]=" + field.getType() + " Not supported");
-//                }
-//            }
-//            if (toAdd.size() > 0) {
+                    }
+                }
+            }
+            // todo if need transform all fieldSets
+//            if (result.size() > 0) {
 //                msg.addField(outGoingFieldName, toAdd);
 //            }
-//        }
-//        return msg;
+        }
         return result;
     }
 
-    public Profile toProfile(Map<String,Object> map){
+    public Profile toProfile(Map<String, Object> map) {
         Profile profile = new Profile();
 
         return profile;
+    }
+
+    private static Object getUserAttribute(List<Attribute> attributes, String valueLocation) {
+        String[] layers = valueLocation.split("/");
+        for (Attribute attribute : attributes) {
+            if (attribute.getCollectApp().equals(layers[0]) && attribute.getSection().equals(layers[1])) {
+                return attribute.getData().get(layers[2]);
+            }
+        }
+        return null;
+    }
+
+    private static String getValueRef(FieldsEntry field) {
+        if (field.getValueRef() == null)
+            throw new CrossSystemMessageProcessingException(String.format("ValueRef is missing for field: %s", field.getFieldName()));
+        return field.getValueRef().asText();
+    }
+
+    private static Object getEventValue(Event input, String valueLocation) {
+        return input.getData().get(valueLocation);
+    }
+    private static JsonNode getMetaValue(String valueLocation) {
+        switch (valueLocation) {
+            case META_COLLECT_APP:
+                return getObjectMapper().getNodeFactory().textNode(queueEvent.session.getCollectApp());
+            case META_SECTION:
+                return getObjectMapper().getNodeFactory().textNode(queueEvent.session.getSection());
+            case META_PROFILE_ID:
+                return getObjectMapper().getNodeFactory().textNode(queueEvent.profile.getId());
+            case META_APP_SECTION_EVENT:
+                return getObjectMapper().getNodeFactory().textNode(queueEvent.internalEventListenerKey);
+            default:
+                return getMetaValue(valueLocation, queueEvent.meta.companyId, queueEvent.meta.bucketId, queueEvent.event);
+        }
     }
 }
