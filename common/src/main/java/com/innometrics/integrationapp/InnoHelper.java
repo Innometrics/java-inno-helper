@@ -3,8 +3,6 @@ package com.innometrics.integrationapp;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.MediaType;
 import com.google.gson.JsonElement;
-import com.innometrics.cache.Cache;
-import com.innometrics.cache.guava.GuavaMemoryCache;
 import com.innometrics.integrationapp.authentication.AppKey;
 import com.innometrics.integrationapp.authentication.AuthMethod;
 import com.innometrics.integrationapp.constants.ProfileCloudOptions;
@@ -23,7 +21,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -31,13 +30,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import static com.innometrics.integrationapp.constants.Resources.*;
 import static com.innometrics.integrationapp.utils.InnoHelperUtils.*;
 
 public class InnoHelper implements Serializable {
     private static final Logger logger = Logger.getLogger(InnoHelper.class.getCanonicalName());
     private static final String API_VERSION = "v1";
-    private final Cache<Object> httpObjectCache;
     private final URL hostWithVersion;
     private NativeHttpClient httpClient = new NativeHttpClient();
     private final ConcurrentMap<String, String> headers = new ConcurrentHashMap<String, String>();
@@ -48,7 +47,6 @@ public class InnoHelper implements Serializable {
     public static final String DEFAULT_SIZE = "1000";
     private static volatile long REQ_DELAY = 0;
     private static volatile long LAST_REQ_TS = 0;
-//    Map<String, String> config;
 
     String companyId;
     String bucketId;
@@ -67,12 +65,11 @@ public class InnoHelper implements Serializable {
         companyId = config.get(COMPANY_ID);
         port = Integer.valueOf(config.getOrDefault(API_PORT, DEFAULT_PORT));
         cacheSize = Integer.valueOf(config.getOrDefault(API_PORT, DEFAULT_SIZE));
-        cacheTTL = Integer.valueOf(config.getOrDefault(API_PORT,DEFAULT_TTL));
+        cacheTTL = Integer.valueOf(config.getOrDefault(API_PORT, DEFAULT_TTL));
         if (!host.startsWith("http")) {
             host = "http://" + host;
         }
         this.hostWithVersion = new URL(host + ":" + port + "/" + API_VERSION);
-        this.httpObjectCache = new GuavaMemoryCache<Object>(cacheSize, cacheTTL, Cache.Strategy.EXPIRE_AFTER_WRITE);
         withHeader(HttpHeaders.CONTENT_TYPE, MediaType.JSON_UTF_8.toString());
         withHeader(HttpHeaders.ACCEPT, MediaType.JSON_UTF_8.toString());
         withAuth(new AppKey(appKey));
@@ -119,86 +116,53 @@ public class InnoHelper implements Serializable {
         }
     }
 
-
-    public App getApp() throws ExecutionException, InterruptedException {
+    public FutureTask<Pair<Integer, App>> getApp() throws ExecutionException, InterruptedException {
         return getObject(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
                 .withResource(buckets, bucketId)
-                .withResource(apps,appID ), App.class, null, null);
+                .withResource(apps, appID), App.class);
     }
 
-
-    public Profile getProfile(String profileId) throws InterruptedException, ExecutionException {
-        return getProfile(companyId, bucketId, profileId, null, null);
-    }
-    // todo maybe remove tmpHeaders tmpParams and overloaded methods
-    public Profile getProfile(String companyId, String bucketId, String profileId, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws InterruptedException, ExecutionException {
-        return getObject(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(profiles, profileId), Profile.class, false, tmpParams, tmpHeaders);
+    public FutureTask<Pair<Integer, Profile>> getProfile(String profileId) throws InterruptedException, ExecutionException {
+        return getObject(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(profiles, profileId), Profile.class);
     }
 
-    public FutureTask<Pair<Integer, Profile>> updateProfile(Profile profile) throws ExecutionException {
-        return updateProfile(companyId, bucketId, profile, null, null);
-    }
-
-    public FutureTask<Pair<Integer, Profile>> updateProfile(String companyId, String bucketId, Profile profile, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws ExecutionException {
+    public FutureTask<Pair<Integer, Profile>> saveProfile(Profile profile) throws ExecutionException {
         return postObject(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
                 .withResource(buckets, bucketId)
-                .withResource(profiles, profile.getId()), profile, Profile.class, tmpParams, tmpHeaders);
+                .withResource(profiles, profile.getId()), profile, Profile.class);
     }
 
-    public FutureTask<Pair<Integer, Profile>> createProfile(Profile profile) throws ExecutionException {
-        return createProfile(companyId, bucketId, profile, null, null);
+    public FutureTask<Pair<Integer, Profile>> mergeProfile(String companyId, String bucketId, String canonicalProfile, String... tempProfiles) throws ExecutionException {
+        Profile mergeProfile = new Profile();
+        mergeProfile.setId(canonicalProfile);
+        mergeProfile.setMergedProfiles(new HashSet<String>(Arrays.asList(tempProfiles)));
+        return postObject(new RestURI(hostWithVersion)
+                .withResource(companies, companyId)
+                .withResource(buckets, bucketId)
+                .withResource(profiles, canonicalProfile), mergeProfile, Profile.class);
+    }
+
+    public  FutureTask<Pair<Integer, Segment[]>> getSegments() throws InterruptedException, ExecutionException {
+        return getObject(new RestURI(hostWithVersion)
+                .withResource(companies, companyId)
+                .withResource(buckets, bucketId)
+                .withResources(segments), Segment[].class);
+    }
+
+    public FutureTask<Pair<Integer, Segment>> getSegment(String segmentId) throws InterruptedException, ExecutionException {
+        return getObject(new RestURI(hostWithVersion)
+                .withResource(companies, companyId)
+                .withResource(buckets, bucketId)
+                .withResource(segments, segmentId), Segment.class);
     }
 
     // todo
-    public FutureTask<Pair<Integer, Profile>> createProfile(String companyId, String bucketId, Profile profile, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws ExecutionException {
-        return postObject(new RestURI(hostWithVersion)
-                .withResource(companies, companyId)
-                .withResource(buckets, bucketId)
-                .withResources(profiles), profile, Profile.class, tmpParams, tmpHeaders);
-    }
-
-    public FutureTask<Pair<Integer, Profile>> mergeProfile(String companyId, String bucketId, String canonicalProfile, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders, String... tempProfiles) throws ExecutionException {
-        Profile mergeProfile = new Profile();
-        mergeProfile.setId(canonicalProfile);
-        return postObject(new RestURI(hostWithVersion)
-                .withResource(companies, companyId)
-                .withResource(buckets, bucketId)
-                .withResource(profiles, canonicalProfile), mergeProfile, Profile.class, tmpParams, tmpHeaders);
-    }
-
-    public FutureTask<Pair<Integer, Profile>> mergeProfile(String canonicalProfile, String... tempProfiles) throws ExecutionException {
-        return mergeProfile(companyId, bucketId, canonicalProfile, null, null, tempProfiles);
-    }
-
-    public Segment[] getSegments(String companyId, String bucketId, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws InterruptedException, ExecutionException {
-        return getObject(new RestURI(hostWithVersion)
-                .withResource(companies, companyId)
-                .withResource(buckets, bucketId)
-                .withResources(segments), Segment[].class, tmpParams, tmpHeaders);
-    }
-
-    public Segment[] getSegments(String companyId, String bucketId) throws InterruptedException, ExecutionException {
-        return getSegments(companyId, bucketId, null, null);
-    }
-
-
-    public Segment getSegment(String segmentId, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws InterruptedException, ExecutionException {
-        return getObject(new RestURI(hostWithVersion)
-                .withResource(companies, companyId)
-                .withResource(buckets, bucketId)
-                .withResource(segments, segmentId), Segment.class, tmpParams, tmpHeaders);
-    }
-
-    public Segment getSegment(String segmentId) throws InterruptedException, ExecutionException {
-        return getSegment(segmentId, null, null);
-    }
-
-    public IqlResult[] evaluateProfile(String companyId, String bucketId, String profileId, boolean doFiltering, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws InterruptedException, ExecutionException, IqlSyntaxException {
-        Segment[] segments = getSegments(companyId, bucketId, tmpParams, tmpHeaders);
+    public IqlResult[] evaluateProfile(String profileId, boolean doFiltering) throws InterruptedException, ExecutionException, IqlSyntaxException {
+        Segment[] segments = getSegments().get().getRight();
         if (segments.length > 0) {
-            Profile toEvaluate = getProfile(companyId, bucketId, profileId, tmpParams, tmpHeaders);
+            Profile toEvaluate = getProfile(profileId).get().getRight();
             IqlResult[] toReturn = new IqlResult[segments.length];
             for (int i = 0; i < segments.length; i++) {
                 toReturn[i] = evaluateProfile(toEvaluate, segments[i], doFiltering);
@@ -209,14 +173,9 @@ public class InnoHelper implements Serializable {
         }
     }
 
-
-    public IqlResult evaluateProfile(String companyId, String bucketId, String profileId, String segmentId, boolean doFiltering, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws InterruptedException, ExecutionException, IqlSyntaxException {
-        return evaluateProfile(getProfile(companyId, bucketId, profileId, tmpParams, tmpHeaders), getSegment(segmentId, tmpParams, tmpHeaders), doFiltering);
-    }
-
-    public IqlResult evaluateProfile(String profileId, String segmentId, boolean doFiltering) throws InterruptedException, ExecutionException, IqlSyntaxException {
-        return evaluateProfile(getProfile(profileId), getSegment(segmentId), doFiltering);
-    }
+//    public IqlResult evaluateProfile(String profileId, String segmentId, boolean doFiltering) throws InterruptedException, ExecutionException, IqlSyntaxException {
+//        return evaluateProfile(getProfile(profileId), getSegment(segmentId), doFiltering);
+//    }
 
     public IqlResult evaluateProfile(Profile profile, Segment segment, boolean doFiltering) throws IqlSyntaxException {
         assert profile != null;
@@ -224,73 +183,36 @@ public class InnoHelper implements Serializable {
         return SegmentUtil.getIqlResult(segment.getIql(), profile, doFiltering);
     }
 
-    private <T> T getObject(RestURI url, Class<T> tClass, boolean cache, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws ExecutionException, InterruptedException {
-        Object toReturn = null;
-        URL endpoint = buildWithParams(url, tmpParams);
-        if (cache) toReturn = httpObjectCache.get(endpoint.toString());
-        if (toReturn == null) {
-            FutureTask<Pair<Integer, T>> result = process(endpoint, HttpMethods.GET, null, tClass, tmpHeaders);
-            toReturn = result.get().getRight();
-            if (cache) httpObjectCache.put(endpoint.toString(), toReturn);
-        }
-        return tClass.cast(toReturn);
+    private <T> FutureTask<Pair<Integer, T>> getObject(RestURI url, Class<T> tClass ) throws ExecutionException, InterruptedException {
+        URL endpoint = build(url);
+        return process(endpoint, HttpMethods.GET, null, tClass);
     }
 
-    private <T> T getObject(RestURI url, Class<T> tClass, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws ExecutionException, InterruptedException {
-        return getObject(url, tClass, true, tmpParams, tmpHeaders);
-    }
 
-    private <T> FutureTask<Pair<Integer, T>> postObject(RestURI url, Object toUpdate, Class<T> toCast, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws ExecutionException {
+
+
+    private <T> FutureTask<Pair<Integer, T>> postObject(RestURI url, Object toUpdate, Class<T> toCast) throws ExecutionException {
         if (toUpdate != null) {
-            URL endpoint = buildWithParams(url, tmpParams);
-            httpObjectCache.clearByKey(endpoint.toString());
-            return process(endpoint, HttpMethods.POST, InnoHelperUtils.getGson().toJson(toUpdate), toCast, tmpHeaders);
+            URL endpoint = build(url);
+            return process(endpoint, HttpMethods.POST, InnoHelperUtils.getGson().toJson(toUpdate), toCast);
         } else {
             throw new UnsupportedOperationException(HttpMethods.POST + " operation does not support NULL!");
         }
 
     }
 
-    private <T> FutureTask<Pair<Integer, T>> putObject(RestURI url, Object toUpdate, Class<T> toCast, Map<ProfileCloudOptions, String> tmpParams, Map<String, String> tmpHeaders) throws ExecutionException {
-        if (toUpdate != null) {
-            URL endpoint = buildWithParams(url, tmpParams);
-            httpObjectCache.clearByKey(endpoint.toString());
-            return process(endpoint, HttpMethods.PUT, InnoHelperUtils.getGson().toJson(toUpdate), toCast, tmpHeaders);
-        } else {
-            throw new UnsupportedOperationException(HttpMethods.PUT + " operation does not support NULL!");
-        }
-    }
-
-    private <T> FutureTask<Pair<Integer, T>> process(URL orig, String method, Class<T> toCast, Map<String, String> tmpHeaders) {
-        return process(orig, method, null, toCast, tmpHeaders);
-    }
-
-    private <T> FutureTask<Pair<Integer, T>> process(URL orig, String method, String body, Class<T> toCast, Map<String, String> tmpHeaders) {
+    private <T> FutureTask<Pair<Integer, T>> process(URL orig, String method, String body, Class<T> toCast) {
         delay();
         try {
-            Map<String, String> execHeader;
-            if (tmpHeaders != null && tmpHeaders.size() > 0) {
-                execHeader = new HashMap<String, String>();
-                execHeader.putAll(this.headers);
-                execHeader.putAll(tmpHeaders);
-            } else {
-                execHeader = this.headers;
-            }
-            return httpClient.sendHttpRequestAsync(orig, method, body, execHeader, toCast);
+            return httpClient.sendHttpRequestAsync(orig, method, body, headers, toCast);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private URL buildWithParams(RestURI uri, Map<ProfileCloudOptions, String> tmpParams) {
+    private URL build(RestURI uri) {
         Map<ProfileCloudOptions, String> execParameters;
-        if (tmpParams != null && tmpParams.size() > 0) {
-            execParameters = new HashMap<ProfileCloudOptions, String>();
-            execParameters.putAll(this.parameters);
-            execParameters.putAll(tmpParams);
-        } else {
-            execParameters = this.parameters;
-        }
+        execParameters = this.parameters;
         try {
             return uri.build(execParameters);
         } catch (MalformedURLException e) {
@@ -303,7 +225,7 @@ public class InnoHelper implements Serializable {
     }
 
     public JsonElement getCustom(String key) throws ExecutionException, InterruptedException {
-        return getApp().getCustom().get(key);
+        return getApp().get().getRight().getCustom().get(key);
     }
 
 

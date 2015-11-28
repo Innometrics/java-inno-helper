@@ -1,14 +1,17 @@
 package com.innometrics.integrationapp;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.innometrics.integrationapp.appsettings.FieldSetsEntry;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.model.Attribute;
 import com.innometrics.integrationapp.model.Event;
 import com.innometrics.integrationapp.model.Profile;
+import com.innometrics.integrationapp.model.Session;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import jdk.nashorn.internal.ir.ObjectNode;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +23,12 @@ import java.util.concurrent.ExecutionException;
  */
 public class InnoTransformer {
     Map<String, RulesEntry> rulesEntries = new HashMap<>();
+    public enum DataType {
+        STRING,INTEGER,LONG,DOUBLE, DATE, TIMESTAMP
+    }
+    public enum DataLevel {
+        EVENTDATA,SESIONDATA,ATTRIBUTEDATA, MACROS,STATIC, PROFILEID,PROFILECRETED, SESSIONCREATED,EVENTCREATED, EVENTDEFINITION
+    }
     public static final String
             PROFILE_ATTRIBUTE = "profileAttribute",
             PROFILE_ID = "profileId",
@@ -45,72 +54,6 @@ public class InnoTransformer {
     public static final String MAPPING_SET_NAME = "mapping";
 
 
-    //
-//    /**
-//     * Main access point for Marco Value
-//     *
-//     * @param valueLocation
-//     * @param requestMeta
-//     * @param event
-//     * @return
-//     */
-//    private static JsonNode getMarcoValue(String valueLocation, RequestMeta requestMeta, Event event) {
-//        switch (valueLocation) {
-//            case MARCO_REQUEST_IP:
-//                return getObjectMapper().getNodeFactory().textNode(requestMeta.requestIp);
-//            case MARCO_USER_AGENT:
-//                return getObjectMapper().getNodeFactory().textNode(requestMeta.headers.get("User-Agent"));
-//            default:
-//                return getMarcoValue(valueLocation, event);
-//        }
-//    }
-//
-//    private static JsonNode getMarcoValue(String valueLocation, Event event) {
-//        switch (valueLocation) {
-//            case MARCO_TIMESTAMP_NOW:
-//                return getObjectMapper().getNodeFactory().numberNode(System.currentTimeMillis());
-//            case MARCO_TIMESTAMP_EVENT:
-//                return getObjectMapper().getNodeFactory().numberNode(event.getCreatedAt().getTime());
-//            default:
-//                return null;
-//        }
-//    }
-//
-//    /**
-//     * Main access point for meta Value
-//     *
-//     * @param valueLocation
-//     * @param queueEvent
-//     * @return
-//     */
-//    private static JsonNode getMetaValue(String valueLocation, QueueEvent queueEvent) {
-//        switch (valueLocation) {
-//            case META_COLLECT_APP:
-//                return getObjectMapper().getNodeFactory().textNode(queueEvent.session.getCollectApp());
-//            case META_SECTION:
-//                return getObjectMapper().getNodeFactory().textNode(queueEvent.session.getSection());
-//            case META_PROFILE_ID:
-//                return getObjectMapper().getNodeFactory().textNode(queueEvent.profile.getId());
-//            case META_APP_SECTION_EVENT:
-//                return getObjectMapper().getNodeFactory().textNode(queueEvent.internalEventListenerKey);
-//            default:
-//                return getMetaValue(valueLocation, queueEvent.meta.companyId, queueEvent.meta.bucketId, queueEvent.event);
-//        }
-//    }
-//
-//    private static JsonNode getMetaValue(String valueLocation, String companyId, String bucketId, Event event) {
-//        switch (valueLocation) {
-//            case META_COMPANY_ID:
-//                return getObjectMapper().getNodeFactory().textNode(companyId);
-//            case META_BUCKET_ID:
-//                return getObjectMapper().getNodeFactory().textNode(bucketId);
-//            case META_EVENT_DEFINITION_ID:
-//                return getObjectMapper().getNodeFactory().textNode(event.getDefinitionId());
-//            default:
-//                return null;
-//        }
-//    }
-//
     public InnoTransformer(RulesEntry[] rulesEntries) {
         for (RulesEntry rulesEntry : rulesEntries) {
             this.rulesEntries.put(rulesEntry.getEvent(), rulesEntry);
@@ -127,56 +70,132 @@ public class InnoTransformer {
         if (rulesEntry == null) {
             return result;
         }
-        final List<Attribute> attributes = profile.getAttributes();
-        final Map<String, Object> sessionData = profile.getSessions().get(0).getData();
-        final Event event = profile.getSessions().get(0).getEvents().get(0);
-
-//
+        QueueEvent queueEvent = new QueueEvent(profile);
         for (FieldSetsEntry fieldSet : rulesEntry.getFieldSets()) {
             String outGoingFieldName = fieldSet.getSetName();
             if (outGoingFieldName.equals(MAPPING_SET_NAME)) {
                 for (FieldsEntry field : fieldSet.getFields()) {
-                    if (field == null || field.getType() == null)
-                        throw new CrossSystemMessageProcessingException(String.format("Field or field type is null for rule %s [%s]", rulesEntry.getName(), rulesEntry.getId()));
-                    switch (field.getType()) {
-                        case PROFILE_ATTRIBUTE:
-                            result.put(field.getFieldName(), getUserAttribute(attributes, getValueRef(field)));
-                            break;
-                        case PROFILE_ID:
-                            result.put(field.getFieldName(), profile.getId());
-                            break;
-                        case EVENT_VALUE:
-                            result.put(field.getFieldName(), getEventValue(event, getValueRef(field)));
-                            break;
-                        case SESSION_VALUE:
-                            result.put(field.getFieldName(), sessionData.get(getValueRef(field)));
-                            break;
-                        case STATIC_VALUE:
-                            result.put(field.getFieldName(), field.getValueRef());
-                            break;
-                        case MACRO_VALUE:
-                            result.put(field.getFieldName(), getMarcoValue(getValueRef(field), meta.request, event));
-                            break;
-                        case META_VALUE:
-                            //TODO: to be fixed
-                            result.put(field.getFieldName(), getMetaValue(getValueRef(field), queueEvent));
-                            break;
-                        default:
-//                        throw new UnsupportedFiledValueTypeException("com.innometrics.model.companyId.app.FieldsEntry[type]=" + field.getType() + " Not supported");
-                    }
+                    if (field == null || field.getType() == null){
+//                        result.put(field.getFieldName(), getValue(profile, field));
                 }
             }
-            // todo if need transform all fieldSets
-//            if (result.size() > 0) {
-//                msg.addField(outGoingFieldName, toAdd);
-//            }
-        }
+        }}
         return result;
     }
 
+//    public Object getValue(Profile profile, FieldsEntry fieldsEntry) {
+//        String result = null;
+//        String stringType = fieldsEntry.getType();
+//        if (stringType == null || stringType.isEmpty()) return null;
+//        DataLevel type = DataLevel.valueOf(stringType.toUpperCase());
+//        Session session = profile.getSessions().get(0);
+//        String[] valueRef = fieldsEntry.getValueRef().asText().split("/");
+//        switch (type) {
+//            case EVENTDATA: {
+//                result = session.getEvents().get(0).getData().get(valueRef[2]).asText();
+//                break;
+//            }
+//            case SESIONDATA: {
+//                result = session.getData().get(valueRef[2]).asText();
+//                break;
+//            }
+//            case ATTRIBUTEDATA: {
+//                for (Attribute attribute : profile.getAttributes()) {
+//                    if (attribute.getCollectApp().equals(valueRef[0]) && attribute.getSection().equals(valueRef[1])) {
+//                        result = attribute.getData().get(valueRef[2]).asText();
+//                    }
+//                }
+//                break;
+//            }
+//            case STATIC: {
+//                result = fieldsEntry.getValueRef().asText();
+//                break;
+//            }
+//            case PROFILEID: {
+//                result = profile.getId();
+//                break;
+//            }
+//            case PROFILECRETED: {
+//                result = profile.getCreatedAt().toString();
+//                break;
+//            }
+//            case SESSIONCREATED: {
+//                result = session.getCreatedAt().toString();
+//                break;
+//            }
+//            case EVENTCREATED: {
+//                result = session.getEvents().get(0).getCreatedAt().toString();
+//                break;
+//            }
+//            case EVENTDEFINITION: {
+//                result = session.getEvents().get(0).getDefinitionId();
+//                break;
+//            }
+//            case MACROS: {
+////                result = fieldsEntry.a();// todo implementMacros
+//                break;
+//            }
+//        }
+//        return convertValue(result, fieldsEntry);
+//    }
+//
+//    protected static Object convertValue(String rawValue, FieldsEntry fieldsEntry) {
+//        if (rawValue == null || rawValue.equals("null")) return null;
+//        DataType type = DataType.STRING;
+//        JsonNode settings = null;
+//        if (fieldsEntry != null && fieldsEntry.getFieldSettings() != null) {
+//            try {
+//                settings = fieldsEntry.getFieldSettings();
+//                type = DataType.valueOf(settings.get("convertType").asText().toUpperCase());
+//            } catch (IllegalArgumentException e) {
+////                logger.debug(e.getMessage());
+//            }
+//        }
+//        switch (type) {
+//            case DOUBLE: {
+//                return Double.valueOf(rawValue);
+//            }
+//            case INTEGER: {
+//                return Integer.valueOf(rawValue);
+//            }
+//            case TIMESTAMP: {
+//                if (settings.isNull()) return Long.valueOf(rawValue);
+//                String format = settings.get("timeFormat").asText();
+//                if (format != null && !format.isEmpty()) {
+//                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+//                    try {
+//                        return simpleDateFormat.parse(rawValue).getTime();
+//                    } catch (ParseException e) {
+//                        return Long.valueOf(rawValue);
+//                    }
+//                }
+//                break;
+//            }
+//            case LONG: {
+//                return Long.valueOf(rawValue);
+//            }
+//            case STRING: {
+//                return rawValue;
+//            }
+//            case DATE: {
+//                if (settings.isNull()) return null;
+//                String format = settings.get("timeFormat").asText();
+//                if (format != null && !format.isEmpty()) {
+//                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+//                    try {
+//                        return simpleDateFormat.parse(rawValue);
+//                    } catch (ParseException e) {
+//                        e.printStackTrace();
+//                        return null;
+//                    }
+//                }
+//                break;
+//            }
+//        }
+//        return rawValue;
+//    }
     public Profile toProfile(Map<String, Object> map) {
         Profile profile = new Profile();
-
         return profile;
     }
 
@@ -190,27 +209,4 @@ public class InnoTransformer {
         return null;
     }
 
-    private static String getValueRef(FieldsEntry field) {
-        if (field.getValueRef() == null)
-            throw new CrossSystemMessageProcessingException(String.format("ValueRef is missing for field: %s", field.getFieldName()));
-        return field.getValueRef().asText();
-    }
-
-    private static Object getEventValue(Event input, String valueLocation) {
-        return input.getData().get(valueLocation);
-    }
-    private static JsonNode getMetaValue(String valueLocation) {
-        switch (valueLocation) {
-            case META_COLLECT_APP:
-                return getObjectMapper().getNodeFactory().textNode(queueEvent.session.getCollectApp());
-            case META_SECTION:
-                return getObjectMapper().getNodeFactory().textNode(queueEvent.session.getSection());
-            case META_PROFILE_ID:
-                return getObjectMapper().getNodeFactory().textNode(queueEvent.profile.getId());
-            case META_APP_SECTION_EVENT:
-                return getObjectMapper().getNodeFactory().textNode(queueEvent.internalEventListenerKey);
-            default:
-                return getMetaValue(valueLocation, queueEvent.meta.companyId, queueEvent.meta.bucketId, queueEvent.event);
-        }
-    }
 }

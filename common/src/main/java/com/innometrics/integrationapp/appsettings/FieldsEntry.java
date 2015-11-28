@@ -7,14 +7,13 @@ public class FieldsEntry {
 
     private Map<String,Object> fieldSettings;
     private Integer order;
-    private Object valueRef;
-    private Object value;
+    private String valueRef;
+    private String value;
     private String fieldName;
     private String type;
     private Boolean required;
     private String srcType;
     private Boolean targetType;
-
 
     public void setOrder(Integer order) {
         this.order = order;
@@ -24,11 +23,11 @@ public class FieldsEntry {
         this.fieldSettings = fieldSettings;
     }
 
-    public void setValueRef(Object valueRef) {
+    public void setValueRef(String valueRef) {
         this.valueRef = valueRef;
     }
 
-    public void setValue(Object value) {
+    public void setValue(String value) {
         this.value = value;
     }
 
@@ -52,7 +51,7 @@ public class FieldsEntry {
         return fieldSettings;
     }
 
-    public Object getValueRef() {
+    public String getValueRef() {
         return valueRef;
     }
 
@@ -71,7 +70,6 @@ public class FieldsEntry {
     public Boolean getRequired() {
         return required;
     }
-
 
     public String getSrcType() {
         return srcType;

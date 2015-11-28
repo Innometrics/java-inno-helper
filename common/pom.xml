@@ -8,7 +8,13 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
+    <repositories>
+        <repository>
+            <id>innometrics</id>
+            <name>Innometrics</name>
+            <url>http://nexus.innomdc.com/nexus/content/groups/public/</url>
+        </repository>
+    </repositories>
     <artifactId>common</artifactId>
     <dependencies>
         <dependency>

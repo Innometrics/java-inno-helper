@@ -57,7 +57,6 @@ public class NativeHttpClient implements Serializable {
             this.resultClass = resultClass;
         }
 
-
         @Override
         public Pair<Integer, T> call() throws IOException {
             HttpURLConnection connection = null;

@@ -11,7 +11,7 @@ public class Profile {
 
     private List<Session> sessions = new ArrayList<Session>();
     private List<Attribute> attributes = new ArrayList<Attribute>();
-
+    private Set<String> mergedProfiles = new LinkedHashSet();
     public String getId() {
         return id;
     }
@@ -50,6 +50,14 @@ public class Profile {
 
     public List<Attribute> getAttributes() {
         return attributes;
+    }
+
+    public Set<String> getMergedProfiles() {
+        return mergedProfiles;
+    }
+
+    public void setMergedProfiles(Set<String> mergedProfiles) {
+        this.mergedProfiles = mergedProfiles;
     }
 
     public void setAttributes(List<Attribute> attributes) {
