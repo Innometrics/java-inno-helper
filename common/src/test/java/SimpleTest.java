@@ -1,3 +1,5 @@
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.innometrics.integrationapp.InnoHelper;
 import com.innometrics.integrationapp.InnoTransformer;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
@@ -6,7 +8,9 @@ import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -67,8 +71,8 @@ public class SimpleTest {
 
     @Test
     public void testTransformFromProfile() throws MalformedURLException, ExecutionException, InterruptedException {
-        RulesEntry[] rulesEntries = InnoHelperUtils.getGson().fromJson("",RulesEntry[].class);
-        InnoTransformer innoTransformer = new InnoTransformer(rulesEntries);
+        InnoHelper innoHelper = new InnoHelper(config);
+        InnoTransformer innoTransformer = new InnoTransformer(innoHelper);
         Profile profile = new Profile();
         // ....
         // get profile from the ... or create
@@ -101,6 +105,28 @@ public class SimpleTest {
     public void testGetUserAppSettings() throws MalformedURLException, ExecutionException, InterruptedException {
         InnoHelper innoHelper = new InnoHelper(config);
         UserSettingModel setting = innoHelper.getCustom("some  key", UserSettingModel.class);
+    }
+
+    @Test
+    public void testDirtyProfile() throws MalformedURLException, ExecutionException, InterruptedException {
+        InnoHelper innoHelper = new InnoHelper(config);
+        Profile profile= new Profile();
+        Session session = new Session();
+        session.setId("`123123");
+        Event event = new Event();
+        event.setDefinitionId("1234");
+        event.setId("ad");
+        session.addEvent(event);
+        profile.addSession(session);
+        profile.resetDirty();
+//        Event event2 = new Event();
+//        event2.setId("q34");
+        event.putData("adadasdas",121233);
+//        event2.setDefinitionId("asaadaaasdaasdsad");
+//        session.addEvent(event2);
+//        session.setDirty(true);
+        System.out.println(InnoHelperUtils.getGson().toJson(profile));
+        System.out.println(new Gson().toJson(profile));
     }
 
 

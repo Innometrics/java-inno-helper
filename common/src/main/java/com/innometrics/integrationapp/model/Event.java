@@ -1,19 +1,26 @@
 package com.innometrics.integrationapp.model;
 
+import com.innometrics.integrationapp.utils.InnoHelperUtils;
+
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
-public class Event{
-    private String id;
+public class Event extends Dirty {
+
+    private String id = InnoHelperUtils.getRandomID(8);
     private Date createdAt;
     private String definitionId;
-    private Map<String,Object> data;
+    private Map<String, Object> data = new HashMap<>();
+    private transient Session session;
 
     public String getId() {
         return id;
     }
 
     public void setId(String id) {
+        setDirty(true);
         this.id = id;
     }
 
@@ -22,6 +29,7 @@ public class Event{
     }
 
     public void setCreatedAt(Date createdAt) {
+        setDirty(true);
         this.createdAt = createdAt;
     }
 
@@ -30,15 +38,26 @@ public class Event{
     }
 
     public void setDefinitionId(String definitionId) {
+        setDirty(true);
         this.definitionId = definitionId;
     }
 
     public Map<String, Object> getData() {
-        return data;
+        return Collections.unmodifiableMap(data);
+    }
+
+    public void putData(String key, Object value) {
+        setDirty(true);
+        data.put(key, value);
     }
 
     public void setData(Map<String, Object> data) {
+        setDirty(true);
         this.data = data;
+    }
+
+    void setSession(Session session) {
+        this.session = session;
     }
 
     //todo add data equals
@@ -55,17 +74,11 @@ public class Event{
         return id.hashCode();
     }
 
-//    public int compareTo(Event o) {
-//        if(o == null) {
-//            throw new NullPointerException();
-//        } else if(this.equals(o)) {
-//            return 0;
-//        } else if(this.getCreatedAt().before(o.getCreatedAt())) {
-//            return -1;
-//        } else if(this.getCreatedAt().after(o.getCreatedAt())) {
-//            return 1;
-//        } else {
-//            return 0;
-//        }
-//    }
+    @Override
+    public void setDirty(boolean dirty) {
+        super.setDirty(dirty);
+        if (session != null) {
+            session.setDirty(true);
+        }
+    }
 }

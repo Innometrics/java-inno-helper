@@ -1,14 +1,13 @@
 package com.innometrics.integrationapp.model;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import com.innometrics.integrationapp.utils.InnoHelperUtils;
+
+import java.util.*;
 
 
-public class Session {
+public class Session  extends Dirty {
 
-    private String id;
+    private String id  = InnoHelperUtils.getRandomID(8);
     private Date createdAt;
     private String collectApp;
     private String section;
@@ -16,6 +15,7 @@ public class Session {
     private List<Event> events = new ArrayList<Event>();
 
     public String getId() {
+        setDirty(true);
         return id;
     }
 
@@ -28,14 +28,17 @@ public class Session {
     }
 
     public void setCreatedAt(Date createdAt) {
+        setDirty(true);
         this.createdAt = createdAt;
     }
 
     public String getCollectApp() {
+
         return collectApp;
     }
 
     public void setCollectApp(String collectApp) {
+        setDirty(true);
         this.collectApp = collectApp;
     }
 
@@ -44,23 +47,34 @@ public class Session {
     }
 
     public void setSection(String section) {
+        setDirty(true);
         this.section = section;
     }
 
     public Map<String, Object> getData() {
-        return data;
+        return Collections.unmodifiableMap(data);
     }
 
     public void setData(Map<String, Object> data) {
+        setDirty(true);
         this.data = data;
     }
 
     public List<Event> getEvents() {
-        return events;
+        return Collections.unmodifiableList(events);
     }
 
     public void setEvents(List<Event> events) {
+        setDirty(true);
         this.events = events;
+    }
+
+    public void addEvent(Event... events ) {
+        setDirty(true);
+        for (Event event : events) {
+            event.setSession(this);
+        }
+        Collections.addAll(this.events, events);
     }
 
     @Override
@@ -87,17 +101,10 @@ public class Session {
         return result;
     }
 
-//    public int compareTo(Session o) {
-//        if(o == null) {
-//            throw new NullPointerException();
-//        } else if(this.equals(o)) {
-//            return 0;
-//        } else if(createdAt.before(o.createdAt)) {
-//            return -1;
-//        } else if(createdAt.after(o.createdAt)) {
-//            return 1;
-//        } else {
-//            return 0;
-//        }
-//    }
+    public void resetDirty() {
+        setDirty(false);
+        for (Event event : events) {
+            event.setDirty(false);
+        }
+    }
 }

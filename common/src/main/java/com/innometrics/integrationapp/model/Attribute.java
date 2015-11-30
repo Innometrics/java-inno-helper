@@ -1,14 +1,15 @@
 package com.innometrics.integrationapp.model;
 
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Attribute {
+public class Attribute extends Dirty {
 
     private String collectApp;
     private String section;
-    private Map<String, Object> data =new HashMap<>();
+    private Map<String, Object> data = new HashMap<>();
 
     public Attribute() {
     }
@@ -20,9 +21,11 @@ public class Attribute {
 
     public String getCollectApp() {
         return collectApp;
+
     }
 
     public void setCollectApp(String collectApp) {
+        setDirty(true);
         this.collectApp = collectApp;
     }
 
@@ -31,15 +34,22 @@ public class Attribute {
     }
 
     public void setSection(String section) {
+        setDirty(true);
         this.section = section;
     }
 
     public Map<String, Object> getData() {
-        return data;
+        return Collections.unmodifiableMap(data);
     }
 
     public void setData(Map<String, Object> data) {
+        setDirty(true);
         this.data = data;
+    }
+
+    public void putData(String key, Object value) {
+        setDirty(true);
+        data.put(key, value);
     }
 
     @Override
@@ -61,8 +71,7 @@ public class Attribute {
         return result;
     }
 
-//    public int compareTo(Attribute o) {
-//        if (o == null) throw new NullPointerException();
-//        return hashCode() - o.hashCode();
-//    }
+    public void resetDirty() {
+        setDirty(false);
+    }
 }

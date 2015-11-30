@@ -3,7 +3,7 @@ package com.innometrics.integrationapp.model;
 import java.util.*;
 
 
-public class Profile {
+public class Profile extends Dirty {
 
     private String id;
     private String version = "1.0";
@@ -29,7 +29,7 @@ public class Profile {
     }
 
     public List<Session> getSessions() {
-        return sessions;
+        return Collections.unmodifiableList(sessions);
     }
 
     public void setSessions(List<Session> sessions) {
@@ -49,7 +49,7 @@ public class Profile {
     }
 
     public List<Attribute> getAttributes() {
-        return attributes;
+        return Collections.unmodifiableList(attributes);
     }
 
     public Set<String> getMergedProfiles() {
@@ -64,10 +64,13 @@ public class Profile {
         if(attributes == null) {
             attributes = new ArrayList<Attribute>();
         }
+        for (Attribute attribute : attributes) {
+            attribute.setDirty(true);
+        }
         this.attributes = attributes;
+        setDirty(true);
     }
-    public void setAttributes( String collectApp,String section , String name , Object value) {
-
+    public void setAttribute( String collectApp,String section , String name , Object value) {
         if(attributes == null) {
             attributes = new ArrayList<Attribute>();
         }
@@ -75,5 +78,19 @@ public class Profile {
         attribute.getData().put(name,value);
         this.attributes.add(attribute);
     }
+    public void addSession(Session session){
+        setDirty(true);
+        session.setDirty(true);
+        sessions.add(session);
+    }
 
+    public void resetDirty() {
+        setDirty(false);
+        for (Session session : sessions) {
+            session.resetDirty();
+        }
+        for (Attribute attribute : attributes) {
+            attribute.resetDirty();
+        }
+    }
 }
