@@ -1,0 +1,188 @@
+package com.innometrics.integrationapp.mapping;
+
+
+import com.innometrics.integrationapp.appsettings.FieldSetsEntry;
+import com.innometrics.integrationapp.appsettings.FieldsEntry;
+import com.innometrics.integrationapp.appsettings.RulesEntry;
+import com.innometrics.integrationapp.model.Attribute;
+import com.innometrics.integrationapp.model.Profile;
+import com.innometrics.integrationapp.model.Session;
+import com.innometrics.integrationapp.utils.InnoHelperUtils;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+/**
+ * Created by killpack on 29.07.15.
+ */
+public class InnoTransformer {
+    public static final String RULES = "rules";
+    public static final String MAPPING_SET_NAME = "mapping";
+    Map<String, RulesEntry> rulesEntries = new HashMap<>();
+
+    public InnoTransformer(RulesEntry[] entries) {
+        for (RulesEntry rulesEntry : entries) {
+            this.rulesEntries.put(rulesEntry.getEvent(), rulesEntry);
+        }
+    }
+
+    public Map<String, Object> fromProfile(Profile profile) throws ProfileDataException {
+        Map<String, Object> result = new HashMap<>();
+        RulesEntry rulesEntry = rulesEntries.get(InnoHelperUtils.getFullFirstEventName(profile));
+        if (rulesEntry == null) {
+            return result;
+        }
+        for (FieldSetsEntry fieldSet : rulesEntry.getFieldSets()) {
+            String outGoingFieldName = fieldSet.getSetName();
+            if (outGoingFieldName.equals(MAPPING_SET_NAME)) {
+                for (FieldsEntry field : fieldSet.getFields()) {
+                    if (field != null && field.getType() != null) {
+                        result.put(field.getFieldName(), getValue(profile, field));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    public Profile toProfile(Map<String, Object> map, String event) {
+        RulesEntry rulesEntry = rulesEntries.get(event);
+
+        for (FieldSetsEntry setsEntry : rulesEntry.getFieldSets()) {
+            if(MAPPING_SET_NAME.equals(setsEntry.getSetName())){
+                Profile profile = new Profile();
+                for (FieldsEntry fieldsEntry : setsEntry.getFields()) {
+                    setObject(profile,fieldsEntry);
+                }
+                return profile;
+            }
+        }
+        return null;
+    }
+
+    private void setObject(Profile profile, FieldsEntry fieldsEntry) {
+        //todo
+    }
+
+    public Object getValue(Profile profile, FieldsEntry fieldsEntry) throws ProfileDataException {
+        Object result = null;
+        String stringType = fieldsEntry.getType();
+        if (stringType == null || stringType.isEmpty()) return null;
+        DataLevel type = DataLevel.valueOf(stringType.toUpperCase());
+        Session session = profile.getSessions().get(0);
+        String valueRef = fieldsEntry.getValueRef();
+        Map<String, Object> data;
+        switch (type) {
+            case EVENT_DATA: {
+                data = session.getEvents().get(0).getData();
+                if (data != null && data.containsKey(valueRef)) {
+                    result = session.getEvents().get(0).getData().get(valueRef);
+                } else throw new ProfileDataException("EventData/" + valueRef);
+                break;
+            }
+            case SESSION_DATA: {
+                data = session.getEvents().get(0).getData();
+                if (data != null && data.containsKey(valueRef)) {
+                    result = session.getData().get(valueRef);
+                } else throw new ProfileDataException("SessionData/" + valueRef);
+                break;
+            }
+            case ATTRIBUTE_DATA: {
+                String[] tmp = valueRef.split("/");
+                for (Attribute attribute : profile.getAttributes()) {
+                    if (attribute.getCollectApp().equals(tmp[0]) && attribute.getSection().equals(tmp[1])) {
+                        result = attribute.getData().get(tmp[2]);
+                    }
+                }
+                break;
+            }
+            case STATIC: {
+                result = fieldsEntry.getValueRef();
+                break;
+            }
+            case PROFILE_ID: {
+                result = profile.getId();
+                break;
+            }
+            case PROFILE_CREATED: {
+                result = profile.getCreatedAt().toString();
+                break;
+            }
+            case SESSION_CREATED: {
+                result = session.getCreatedAt().toString();
+                break;
+            }
+            case EVENT_CREATED: {
+                result = session.getEvents().get(0).getCreatedAt().toString();
+                break;
+            }
+            case EVENT_DEFINITION: {
+                result = session.getEvents().get(0).getDefinitionId();
+                break;
+            }
+            case MACROS: {
+//                result = fieldsEntry.a();// todo implementMacros
+                break;
+            }
+        }
+        return convertValue(result, fieldsEntry);
+    }
+
+    protected static Object convertValue(Object value, FieldsEntry fieldsEntry) {
+        if (value == null || value.equals("null")) return null;
+        String tmp = String.valueOf(value);
+        DataType type = DataType.STRING;
+        Map<String, Object> settings = null;
+        if (fieldsEntry != null && fieldsEntry.getFieldSettings() != null) {
+            try {
+                settings = fieldsEntry.getFieldSettings();
+                type = DataType.valueOf(String.valueOf(settings.get("convertType")).toUpperCase());
+            } catch (IllegalArgumentException e) {
+//                logger.debug(e.getMessage());
+            }
+        }
+        switch (type) {
+            case DOUBLE: {
+                return Double.valueOf(tmp);
+            }
+            case INTEGER: {
+                return Integer.valueOf(tmp);
+            }
+            case TIMESTAMP: {
+                if (settings.isEmpty()) return Long.valueOf(tmp);
+                String format = String.valueOf(settings.get("timeFormat"));
+                if (format != null && !format.isEmpty()) {
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+                    try {
+                        return simpleDateFormat.parse(tmp).getTime();
+                    } catch (ParseException e) {
+                        return Long.valueOf(tmp);
+                    }
+                }
+                break;
+            }
+            case LONG: {
+                return Long.valueOf(tmp);
+            }
+            case STRING: {
+                return value;
+            }
+            case DATE: {
+                if (settings.isEmpty()) return null;
+                String format = String.valueOf(settings.get("timeFormat"));
+                if (format != null && !format.isEmpty()) {
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+                    try {
+                        return simpleDateFormat.parse(tmp);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+                break;
+            }
+        }
+        return value;
+    }
+}

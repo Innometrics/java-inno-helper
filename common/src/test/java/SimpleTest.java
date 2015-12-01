@@ -1,16 +1,12 @@
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.innometrics.integrationapp.InnoHelper;
-import com.innometrics.integrationapp.InnoTransformer;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.model.*;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Type;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -69,30 +65,6 @@ public class SimpleTest {
         System.out.println(InnoHelperUtils.getGson().toJson(profile1));
     }
 
-    @Test
-    public void testTransformFromProfile() throws MalformedURLException, ExecutionException, InterruptedException {
-        InnoHelper innoHelper = new InnoHelper(config);
-        InnoTransformer innoTransformer = new InnoTransformer(innoHelper);
-        Profile profile = new Profile();
-        // ....
-        // get profile from the ... or create
-        // ....
-        Map<String, Object> result = innoTransformer.fromProfile(profile);
-    }
-
-    @Test
-    public void testTransformToProfile() throws MalformedURLException, ExecutionException, InterruptedException {
-        InnoHelper innoHelper = new InnoHelper(config);
-        InnoTransformer innoTransformer = new InnoTransformer(innoHelper);
-        // ....
-        // get data  from the ... (f.e. *.csv)
-        // ....
-        Map<String, Object> data = new HashMap<>();
-        data.put("some filed name1", "value2"); // (f.e. csv header and  cell)
-        data.put("some filed name2", "value2");
-        data.put("some filed name3", "value3");
-        Profile result = innoTransformer.toProfile(data);
-    }
 
     @Test
     public void testGetDefultAppSettings() throws MalformedURLException, ExecutionException, InterruptedException {

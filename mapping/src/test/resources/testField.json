@@ -1,0 +1,24 @@
+[
+  {
+    "id": "1430809503045",
+    "name": "test1",
+    "event": "testCollectApp/testSection/EventDefinitionId",
+    "ruleSettings": {
+    },
+    "fieldSets": [
+      {
+        "setName": "mapping",
+        "fields": [
+          {
+            "fieldName": "test",
+            "type": "event_data",
+            "fieldSettings": {
+              "convertType": "string"
+            },
+            "valueRef": "testKey"
+          }
+        ]
+      }
+    ]
+  }
+]
