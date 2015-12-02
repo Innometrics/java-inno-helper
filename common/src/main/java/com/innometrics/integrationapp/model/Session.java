@@ -107,4 +107,9 @@ public class Session  extends Dirty {
             event.setDirty(false);
         }
     }
+
+    public void putData(String fieldName, Object o) {
+        setDirty(true);
+        data.put(fieldName,o);
+    }
 }

@@ -1,10 +1,12 @@
 package com.innometrics.integrationapp.mapping;
 
 
+import com.innometrics.integrationapp.InnoHelper;
 import com.innometrics.integrationapp.appsettings.FieldSetsEntry;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.model.Attribute;
+import com.innometrics.integrationapp.model.Event;
 import com.innometrics.integrationapp.model.Profile;
 import com.innometrics.integrationapp.model.Session;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
@@ -12,6 +14,7 @@ import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by killpack on 29.07.15.
@@ -20,9 +23,11 @@ public class InnoTransformer {
     public static final String RULES = "rules";
     public static final String MAPPING_SET_NAME = "mapping";
     Map<String, RulesEntry> rulesEntries = new HashMap<>();
-
-    public InnoTransformer(RulesEntry[] entries) {
-        for (RulesEntry rulesEntry : entries) {
+    InnoHelper innoHelper ;
+    public InnoTransformer(InnoHelper  innoHelper) throws ExecutionException, InterruptedException {
+        this.innoHelper = innoHelper;
+        RulesEntry [] rulesEntries = innoHelper.getCustom(RULES,RulesEntry[].class);
+        for (RulesEntry rulesEntry : rulesEntries) {
             this.rulesEntries.put(rulesEntry.getEvent(), rulesEntry);
         }
     }
@@ -46,24 +51,66 @@ public class InnoTransformer {
         return result;
     }
 
-    public Profile toProfile(Map<String, Object> map, String event) {
-        RulesEntry rulesEntry = rulesEntries.get(event);
-
+    public Profile toProfile(Map<String, Object> map, String entryName) {
+        RulesEntry rulesEntry = null;
+        for (RulesEntry entry : rulesEntries.values()) {
+            if (entry.getName().equals(entryName)){
+                rulesEntry = entry;
+            }
+        }
         for (FieldSetsEntry setsEntry : rulesEntry.getFieldSets()) {
             if(MAPPING_SET_NAME.equals(setsEntry.getSetName())){
                 Profile profile = new Profile();
+                Session session= new Session();
+                Event event = new Event();
                 for (FieldsEntry fieldsEntry : setsEntry.getFields()) {
-                    setObject(profile,fieldsEntry);
+                    String type = fieldsEntry.getType();
+                    DataLevel dataLevel = DataLevel.valueOf(type.toUpperCase());
+                    String[] valueRef = fieldsEntry.getValueRef().split("/");
+                    if (dataLevel!=null){
+                        switch (dataLevel){
+                            case PROFILE_ID:{
+                                profile.setId((String) convertValue(map.get("Pro"), fieldsEntry));
+                                break;
+                            }
+                            case ATTRIBUTE_DATA:{
+                                profile.setAttribute(valueRef[0], valueRef[1], valueRef[2], convertValue(map.get(fieldsEntry.getFieldName()), fieldsEntry));
+                                break;
+                            }
+                            case EVENT_DATA:{
+                                session.setCollectApp(valueRef[0]);
+                                session.setSection(valueRef[1]);
+                                event.setDefinitionId(valueRef[2]);
+                                event.putData(valueRef[3],convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
+                                break;
+                            }
+                            case EVENT_DEFINITION:{
+                                event.setDefinitionId((String) convertValue(map.get(DataLevel.EVENT_DEFINITION.name()),fieldsEntry));
+                                break;
+                            }
+                            case SESSION_DATA:{
+                                session.setCollectApp(valueRef[0]);
+                                session.setSection(valueRef[1]);
+                                session.putData(valueRef[2],convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
+                                break;
+                            }
+                            case SESSION_CREATED:{
+                                session.setCreatedAt((Date) convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
+                                break;
+                            }
+                        }
+                    }
                 }
+
+                session.addEvent(event);
+                profile.addSession(session);
                 return profile;
             }
         }
         return null;
     }
 
-    private void setObject(Profile profile, FieldsEntry fieldsEntry) {
-        //todo
-    }
+
 
     public Object getValue(Profile profile, FieldsEntry fieldsEntry) throws ProfileDataException {
         Object result = null;
