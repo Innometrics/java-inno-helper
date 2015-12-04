@@ -1,9 +1,9 @@
 package com.innometrics.integrationapp.httpclient;
 
 
-import com.google.common.net.HttpHeaders;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.innometrics.integrationapp.constants.HttpHeaders;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import com.innometrics.integrationapp.utils.HttpMethods;
 import org.apache.commons.io.IOUtils;

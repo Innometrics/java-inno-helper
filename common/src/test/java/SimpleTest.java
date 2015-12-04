@@ -41,12 +41,12 @@ public class SimpleTest {
         event.setDefinitionId("");
         session.setSection("sdadad");
         event.setData(data);
-        profile.getSessions().add(session);
-        session.getEvents().add(event);
+        profile.addSession(session);
+        session.addEvent(event);
         session.setData(data);
         Attribute attribute = new Attribute("asdasd", "asdad");
         attribute.setData(data);
-        profile.getAttributes().add(attribute);
+        profile.addAttribute(attribute);
         profile.setId("002");
         // end of create profile
 

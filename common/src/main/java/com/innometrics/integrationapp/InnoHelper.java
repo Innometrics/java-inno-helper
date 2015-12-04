@@ -1,10 +1,9 @@
 package com.innometrics.integrationapp;
 
-import com.google.common.net.HttpHeaders;
-import com.google.common.net.MediaType;
 import com.google.gson.JsonElement;
 import com.innometrics.integrationapp.authentication.AppKey;
 import com.innometrics.integrationapp.authentication.AuthMethod;
+import com.innometrics.integrationapp.constants.HttpHeaders;
 import com.innometrics.integrationapp.constants.ProfileCloudOptions;
 import com.innometrics.integrationapp.httpclient.NativeHttpClient;
 import com.innometrics.integrationapp.model.App;
@@ -47,7 +46,9 @@ public class InnoHelper implements Serializable {
     public static final String DEFAULT_SIZE = "1000";
     private static volatile long REQ_DELAY = 0;
     private static volatile long LAST_REQ_TS = 0;
-
+    private long lastGetConfigTime;
+    private long getConfigTimeOut = 10_000;
+    App app;
     String companyId;
     String bucketId;
     String host;
@@ -70,8 +71,8 @@ public class InnoHelper implements Serializable {
             host = "http://" + host;
         }
         this.hostWithVersion = new URL(host + ":" + port + "/" + API_VERSION);
-        withHeader(HttpHeaders.CONTENT_TYPE, MediaType.JSON_UTF_8.toString());
-        withHeader(HttpHeaders.ACCEPT, MediaType.JSON_UTF_8.toString());
+        withHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
+        withHeader(HttpHeaders.ACCEPT, "application/json; charset=utf-8");
         withAuth(new AppKey(appKey));
     }
 
@@ -116,12 +117,20 @@ public class InnoHelper implements Serializable {
         }
     }
 
-    public FutureTask<Pair<Integer, App>> getApp() throws ExecutionException, InterruptedException {
-        return getObject(new RestURI(hostWithVersion)
-                .withResource(companies, companyId)
-                .withResource(buckets, bucketId)
-                .withResource(apps, appID), App.class);
+    public App getApp() throws ExecutionException, InterruptedException {
+        if (lastGetConfigTime + getConfigTimeOut < System.currentTimeMillis() ) {
+            app = getObject(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(apps, appID), App.class).get().getRight();
+            lastGetConfigTime= System.currentTimeMillis();
+        }
+        return app;
     }
+
+//    public FutureTask<Pair<Integer, App>> getApp() throws ExecutionException, InterruptedException {
+//        return getObject(new RestURI(hostWithVersion)
+//                .withResource(companies, companyId)
+//                .withResource(buckets, bucketId)
+//                .withResource(apps, appID), App.class);
+//    }
 
     public FutureTask<Pair<Integer, Profile>> getProfile(String profileId) throws InterruptedException, ExecutionException {
         return getObject(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(profiles, profileId), Profile.class);
@@ -144,7 +153,7 @@ public class InnoHelper implements Serializable {
                 .withResource(profiles, canonicalProfile), mergeProfile, Profile.class);
     }
 
-    public  FutureTask<Pair<Integer, Segment[]>> getSegments() throws InterruptedException, ExecutionException {
+    public FutureTask<Pair<Integer, Segment[]>> getSegments() throws InterruptedException, ExecutionException {
         return getObject(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
                 .withResource(buckets, bucketId)
@@ -183,12 +192,10 @@ public class InnoHelper implements Serializable {
         return SegmentUtil.getIqlResult(segment.getIql(), profile, doFiltering);
     }
 
-    private <T> FutureTask<Pair<Integer, T>> getObject(RestURI url, Class<T> tClass ) throws ExecutionException, InterruptedException {
+    private <T> FutureTask<Pair<Integer, T>> getObject(RestURI url, Class<T> tClass) throws ExecutionException, InterruptedException {
         URL endpoint = build(url);
         return process(endpoint, HttpMethods.GET, null, tClass);
     }
-
-
 
 
     private <T> FutureTask<Pair<Integer, T>> postObject(RestURI url, Object toUpdate, Class<T> toCast) throws ExecutionException {
@@ -225,7 +232,7 @@ public class InnoHelper implements Serializable {
     }
 
     public JsonElement getCustom(String key) throws ExecutionException, InterruptedException {
-        return getApp().get().getRight().getCustom().get(key);
+        return getApp().getCustom().get(key);
     }
 
 

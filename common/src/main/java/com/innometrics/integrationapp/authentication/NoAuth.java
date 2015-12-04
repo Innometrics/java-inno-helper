@@ -1,6 +1,6 @@
 package com.innometrics.integrationapp.authentication;
 
-import com.google.common.net.HttpHeaders;
+import com.innometrics.integrationapp.constants.HttpHeaders;
 import com.innometrics.integrationapp.constants.ProfileCloudOptions;
 
 import java.util.Map;

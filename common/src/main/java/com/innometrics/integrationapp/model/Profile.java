@@ -93,4 +93,8 @@ public class Profile extends Dirty {
             attribute.resetDirty();
         }
     }
+
+    public void addAttribute(Attribute attribute) {
+        attributes.add(attribute);
+    }
 }
