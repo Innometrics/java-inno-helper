@@ -58,12 +58,12 @@ public class InnoHelper implements Serializable {
     int cacheSize;
     int cacheTTL;
 
-    public InnoHelper(Map<String, String> config) throws MalformedURLException {  // todo  validate config
-        host = config.get(API_SERVER);
-        appKey = config.get(APP_KEY);
-        appID = config.get(APP_ID);
-        bucketId = config.get(BUCKET_ID);
-        companyId = config.get(COMPANY_ID);
+    public InnoHelper(Map<String, String> config) throws MalformedURLException {
+        host =getOrError(config,API_SERVER);
+        appKey = getOrError(config, APP_KEY);
+        appID = getOrError(config, APP_ID);
+        bucketId = getOrError(config, BUCKET_ID);
+        companyId = getOrError(config,COMPANY_ID);
         port = Integer.valueOf(config.getOrDefault(API_PORT, DEFAULT_PORT));
         cacheSize = Integer.valueOf(config.getOrDefault(API_PORT, DEFAULT_SIZE));
         cacheTTL = Integer.valueOf(config.getOrDefault(API_PORT, DEFAULT_TTL));
@@ -76,6 +76,12 @@ public class InnoHelper implements Serializable {
         withAuth(new AppKey(appKey));
     }
 
+    String getOrError(Map<String, String> config,String field){
+        if (!config.containsKey(field)){
+            throw new IllegalArgumentException("In the settings missing a required field "+ field);
+        }
+        else return config.get(field);
+    }
     public InnoHelper withAuth(AuthMethod auth) {
         if (auth != null) {
             auth.authorize(parameters, headers);

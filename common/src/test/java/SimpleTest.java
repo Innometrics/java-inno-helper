@@ -3,6 +3,7 @@ import com.innometrics.integrationapp.InnoHelper;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.model.*;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -80,9 +81,23 @@ public class SimpleTest {
     }
 
     @Test
+    public void testVarildation() throws MalformedURLException, ExecutionException, InterruptedException {
+        Map <String,String>config = new HashMap<>();
+        config.put(InnoHelperUtils.API_SERVER, "http://api.innomdc.com");
+        config.put(InnoHelperUtils.APP_KEY, "89oXs4UmZ325uDuA");
+        config.put(InnoHelperUtils.BUCKET_ID, "bucket1");
+        config.put(InnoHelperUtils.COMPANY_ID, "4");
+        try {
+            InnoHelper innoHelper = new InnoHelper(config);
+        }catch (IllegalArgumentException e){
+            Assert.assertEquals("In the settings missing a required field INNO_APP_ID", e.getMessage());
+        }
+    }
+
+    @Test
     public void testDirtyProfile() throws MalformedURLException, ExecutionException, InterruptedException {
         InnoHelper innoHelper = new InnoHelper(config);
-        Profile profile= new Profile();
+        Profile profile = new Profile();
         Session session = new Session();
         session.setId("`123123");
         Event event = new Event();
@@ -93,7 +108,7 @@ public class SimpleTest {
         profile.resetDirty();
 //        Event event2 = new Event();
 //        event2.setId("q34");
-        event.putData("adadasdas",121233);
+        event.putData("adadasdas", 121233);
 //        event2.setDefinitionId("asaadaaasdaasdsad");
 //        session.addEvent(event2);
 //        session.setDirty(true);

@@ -37,12 +37,18 @@ public class TestMapping {
         config.put(InnoHelperUtils.COMPANY_ID, "4");
         config.put(InnoHelperUtils.APP_ID, "sql-connector");
     }
+
+    InnoTransformer getTransformer(String settingsFile) throws ExecutionException, InterruptedException, FileNotFoundException {
+        InnoHelper innoHelper = Mockito.mock(InnoHelper.class);
+        RulesEntry[] rulesEntries = new Gson().fromJson(new FileReader(new File(getClass().getResource(settingsFile).getPath())), RulesEntry[].class);
+        Mockito.when(innoHelper.getCustom(InnoTransformer.RULES, RulesEntry[].class)).thenReturn(rulesEntries);
+        InnoTransformer innoTransformer = new InnoTransformer(innoHelper);
+        return innoTransformer;
+    }
+
     @Test
     public void testTransformFromProfile() throws ExecutionException, InterruptedException, MalformedURLException, FileNotFoundException, ProfileDataException {
-        InnoHelper innoHelper = Mockito.mock(InnoHelper.class);
-        RulesEntry[] rulesEntries = new Gson().fromJson(new FileReader(new File(getClass().getResource("/testField.json").getPath())),RulesEntry[].class);
-        Mockito.when(innoHelper.getCustom(InnoTransformer.RULES,RulesEntry[].class)).thenReturn(rulesEntries);
-        InnoTransformer innoTransformer = new InnoTransformer(innoHelper);
+        InnoTransformer innoTransformer = getTransformer("/testField.json");
         Profile profile = new Profile();
         profile.setId("test");
         Session session = new Session();
@@ -60,13 +66,10 @@ public class TestMapping {
 
     @Test
     public void testTransformToProfile() throws MalformedURLException, ExecutionException, InterruptedException, FileNotFoundException {
-        InnoHelper innoHelper = Mockito.mock(InnoHelper.class);
-        RulesEntry[] rulesEntries = new Gson().fromJson(new FileReader(new File(getClass().getResource("/testFieldToProfile.json").getPath())),RulesEntry[].class);
-        Mockito.when(innoHelper.getCustom(InnoTransformer.RULES,RulesEntry[].class)).thenReturn(rulesEntries);
-        InnoTransformer innoTransformer = new InnoTransformer(innoHelper);
+        InnoTransformer innoTransformer = getTransformer("/testFieldToProfile.json");
         Map<String, Object> data = new HashMap<>();
         data.put("test", "testValue"); // (f.e. csv header and  cell)
-        Profile result = innoTransformer.toProfile(data,"test1");
+        Profile result = innoTransformer.toProfile(data, "test1");
         Assert.assertEquals("testValue", result.getSessions().get(0).getEvents().get(0).getData().get("test"));
     }
 
