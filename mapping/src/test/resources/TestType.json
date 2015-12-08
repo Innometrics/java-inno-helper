@@ -15,7 +15,7 @@
             "fieldSettings": {
               "convertType": "string"
             },
-            "valueRef": "test"
+            "valueRef": "testKey"
           }
         ]
       }

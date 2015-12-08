@@ -1,0 +1,48 @@
+[
+  {
+    "id": "1430809503045",
+    "name": "test1",
+    "event": "testCollectApp/testSection/EventDefinitionId",
+    "ruleSettings": {
+    },
+    "fieldSets": [
+      {
+        "setName": "mapping",
+        "fields": [
+          {
+            "fieldName": "profId",
+            "type": "profile_id"
+          } , {
+            "fieldName": "evD",
+            "type": "event_definition",
+            "value": "eventDefinition"
+          } ,{
+            "fieldName": "profCreated",
+            "type": "profile_created"
+          },{
+            "fieldName": "evCreated",
+            "type": "event_created"
+          },{
+            "fieldName": "sesCreated",
+            "type": "session_created"
+          },
+          {
+            "fieldName": "url",
+            "type": "event_data",
+            "valueRef": "event url"
+          },
+          {
+            "fieldName": "url",
+            "type": "attribute_data",
+            "valueRef": "collectApp/Section/attribute url"
+          },
+          {
+            "fieldName": "url",
+            "type": "session_data",
+            "valueRef": "collectApp/Section/session url"
+          }
+        ]
+      }
+    ]
+  }
+]

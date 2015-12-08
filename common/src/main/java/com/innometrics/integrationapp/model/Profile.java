@@ -12,6 +12,14 @@ public class Profile extends Dirty {
     private List<Session> sessions = new ArrayList<Session>();
     private List<Attribute> attributes = new ArrayList<Attribute>();
     private Set<String> mergedProfiles = new LinkedHashSet();
+
+    public Profile() {
+    }
+
+    public Profile(String profileId) {
+        id= profileId;
+    }
+
     public String getId() {
         return id;
     }
@@ -75,7 +83,7 @@ public class Profile extends Dirty {
             attributes = new ArrayList<Attribute>();
         }
         Attribute attribute= new Attribute(collectApp,section);
-        attribute.getData().put(name,value);
+        attribute.putData(name,value);
         this.attributes.add(attribute);
     }
     public void addSession(Session session){

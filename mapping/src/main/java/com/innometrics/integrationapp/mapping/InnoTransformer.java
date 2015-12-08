@@ -66,29 +66,28 @@ public class InnoTransformer {
                 for (FieldsEntry fieldsEntry : setsEntry.getFields()) {
                     String type = fieldsEntry.getType();
                     DataLevel dataLevel = DataLevel.valueOf(type.toUpperCase());
-                    String[] valueRef = fieldsEntry.getValueRef().split("/");
                     if (dataLevel!=null){
                         switch (dataLevel){
                             case PROFILE_ID:{
-                                profile.setId((String) convertValue(map.get("Pro"), fieldsEntry));
+                                profile.setId((String) convertValue(map.get(fieldsEntry.getFieldName()), fieldsEntry));
                                 break;
                             }
                             case ATTRIBUTE_DATA:{
+                                String[] valueRef= validateValueRef(fieldsEntry.getValueRef());
                                 profile.setAttribute(valueRef[0], valueRef[1], valueRef[2], convertValue(map.get(fieldsEntry.getFieldName()), fieldsEntry));
                                 break;
                             }
                             case EVENT_DATA:{
-                                session.setCollectApp(valueRef[0]);
-                                session.setSection(valueRef[1]);
-                                event.setDefinitionId(valueRef[2]);
-                                event.putData(valueRef[3],convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
+                                String[] valueRef= validateValueRef(fieldsEntry.getValueRef());
+                                event.putData(valueRef[0],convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
                                 break;
                             }
                             case EVENT_DEFINITION:{
-                                event.setDefinitionId((String) convertValue(map.get(DataLevel.EVENT_DEFINITION.name()),fieldsEntry));
+                                event.setDefinitionId((String) convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
                                 break;
                             }
                             case SESSION_DATA:{
+                                String[] valueRef= validateValueRef(fieldsEntry.getValueRef());
                                 session.setCollectApp(valueRef[0]);
                                 session.setSection(valueRef[1]);
                                 session.putData(valueRef[2],convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
@@ -96,6 +95,13 @@ public class InnoTransformer {
                             }
                             case SESSION_CREATED:{
                                 session.setCreatedAt((Date) convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
+                                break;
+                            }
+                            case EVENT_CREATED:{
+                                event.setCreatedAt((Date) convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
+                                break;
+                            }case PROFILE_CREATED:{
+                                profile.setCreatedAt((Date) convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
                                 break;
                             }
                         }
@@ -110,6 +116,17 @@ public class InnoTransformer {
         return null;
     }
 
+    private String[] validateValueRef(String valueRef) {
+        if (valueRef==null ||valueRef.isEmpty()){
+            // todo
+            throw new IllegalArgumentException("");
+        }
+        String[] res = valueRef.split("/");
+        if (!(res.length==3 || res.length==1 )){
+            throw new IllegalArgumentException("");
+        }
+        return res;
+    }
 
 
     public Object getValue(Profile profile, FieldsEntry fieldsEntry) throws ProfileDataException {

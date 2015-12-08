@@ -11,7 +11,7 @@ public class Session  extends Dirty {
     private Date createdAt;
     private String collectApp;
     private String section;
-    private Map<String, Object> data;
+    private Map<String, Object> data = new HashMap<>();
     private List<Event> events = new ArrayList<Event>();
 
     public String getId() {

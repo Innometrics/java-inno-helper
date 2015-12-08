@@ -305,4 +305,9 @@ public class InnoHelper implements Serializable {
     public void setCacheTTL(int cacheTTL) {
         this.cacheTTL = cacheTTL;
     }
+
+    public void setHttpClient(NativeHttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
+
 }
