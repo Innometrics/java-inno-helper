@@ -21,7 +21,9 @@ public class InnoHelperUtils {
     public static final String API_PORT = "INNO_API_PORT";
     static final Gson gson = initGson();
     private static final char[] chars = "1234567890abcdefghijklmnopqrstuvwxyz".toCharArray();
-
+    // Added required cache params:
+    public static final String CACHE_SIZE = "INNO_CACHE_SIZE";
+    public static final String CACHE_TTL = "INNO_CACHE_TTL";
     public static Gson getGson() {
         return gson;
     }
@@ -33,6 +35,7 @@ public class InnoHelperUtils {
                 return new Date(json.getAsJsonPrimitive().getAsLong());
             }
         });
+
         Type collectionTypeSession = new TypeToken<List<Session>>() {
         }.getType();
         Type collectionTypeEvent = new TypeToken<List<Event>>() {

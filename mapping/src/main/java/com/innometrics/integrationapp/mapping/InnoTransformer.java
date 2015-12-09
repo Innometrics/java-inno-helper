@@ -11,6 +11,7 @@ import com.innometrics.integrationapp.model.Profile;
 import com.innometrics.integrationapp.model.Session;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -24,7 +25,7 @@ public class InnoTransformer {
     public static final String MAPPING_SET_NAME = "mapping";
     Map<String, RulesEntry> rulesEntries = new HashMap<>();
     InnoHelper innoHelper ;
-    public InnoTransformer(InnoHelper  innoHelper) throws ExecutionException, InterruptedException {
+    public InnoTransformer(InnoHelper  innoHelper) throws ExecutionException, InterruptedException, IOException {
         this.innoHelper = innoHelper;
         RulesEntry [] rulesEntries = innoHelper.getCustom(RULES,RulesEntry[].class);
         for (RulesEntry rulesEntry : rulesEntries) {

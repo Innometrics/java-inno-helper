@@ -3,10 +3,12 @@ import com.innometrics.integrationapp.InnoHelper;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.model.*;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
+import com.squareup.okhttp.Response;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +31,7 @@ public class SimpleTest {
     }
 
     @Test
-    public void testCreateProfile() throws MalformedURLException, ExecutionException, InterruptedException {
+    public void testCreateProfile() throws IOException, ExecutionException, InterruptedException {
         InnoHelper innoHelper = new InnoHelper(config);
         // create profile
         Profile profile = new Profile();
@@ -49,33 +51,52 @@ public class SimpleTest {
         attribute.setData(data);
         profile.addAttribute(attribute);
         profile.setId("002");
-        // end of create profile
-
-
-        FutureTask futureTask = innoHelper.saveProfile(profile);
-
-        futureTask.get();
-//        innoHelper.mergeProfile("some temp profile id ", "some temp profile id2 ", "some temp profile id2 ");
-//        innoHelper.evaluateProfile(profile);// todo  IQL segments
+        Response response = innoHelper.saveProfile(profile);
+        System.out.println(response.message());
     }
 
     @Test
-    public void testGetProfile() throws ExecutionException, InterruptedException, MalformedURLException {
+    public void testGetProfile() throws ExecutionException, InterruptedException, IOException {
         InnoHelper innoHelper = new InnoHelper(config);
-        Profile profile1 = innoHelper.getProfile("322").get().getRight();
+        Profile profile1 = innoHelper.getProfile("322");
         System.out.println(InnoHelperUtils.getGson().toJson(profile1));
     }
 
+    @Test
+    public void testGetManyProfile() throws ExecutionException, InterruptedException, IOException {
+        InnoHelper innoHelper = new InnoHelper(config);
+        long t = System.currentTimeMillis();
+        for (int i = 0; i < 10; i++) {
+             new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Profile profile1 = null;
+                    try {
+                        profile1 = innoHelper.getProfile("322");
+                        System.out.println(System.currentTimeMillis()-t);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(InnoHelperUtils.getGson().toJson(profile1));
+                }
+            }).start();
+        }
+        Thread.sleep(10000);
+    }
 
     @Test
-    public void testGetDefultAppSettings() throws MalformedURLException, ExecutionException, InterruptedException {
+    public void testGetDefultAppSettings() throws IOException, ExecutionException, InterruptedException {
         InnoHelper innoHelper = new InnoHelper(config);
         RulesEntry[] setting = innoHelper.getCustom("rules", RulesEntry[].class);
     }
 
 
     @Test
-    public void testGetUserAppSettings() throws MalformedURLException, ExecutionException, InterruptedException {
+    public void testGetUserAppSettings() throws IOException, ExecutionException, InterruptedException {
         InnoHelper innoHelper = new InnoHelper(config);
         UserSettingModel setting = innoHelper.getCustom("some  key", UserSettingModel.class);
     }

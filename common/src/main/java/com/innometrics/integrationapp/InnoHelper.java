@@ -1,11 +1,10 @@
 package com.innometrics.integrationapp;
 
 import com.google.gson.JsonElement;
-import com.innometrics.integrationapp.authentication.AppKey;
-import com.innometrics.integrationapp.authentication.AuthMethod;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.innometrics.integrationapp.constants.HttpHeaders;
 import com.innometrics.integrationapp.constants.ProfileCloudOptions;
-import com.innometrics.integrationapp.httpclient.NativeHttpClient;
 import com.innometrics.integrationapp.model.App;
 import com.innometrics.integrationapp.model.Profile;
 import com.innometrics.integrationapp.model.Segment;
@@ -15,8 +14,9 @@ import com.innometrics.integrationapp.utils.RestURI;
 import com.innometrics.integrationapp.utils.SegmentUtil;
 import com.innometrics.iql.IqlResult;
 import com.innometrics.iql.IqlSyntaxException;
-import org.apache.commons.lang3.tuple.Pair;
+import com.squareup.okhttp.*;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,16 +36,16 @@ public class InnoHelper implements Serializable {
     private static final Logger logger = Logger.getLogger(InnoHelper.class.getCanonicalName());
     private static final String API_VERSION = "v1";
     private final URL hostWithVersion;
-    private NativeHttpClient httpClient = new NativeHttpClient();
+    private OkHttpClient httpClient = new OkHttpClient();
     private final ConcurrentMap<String, String> headers = new ConcurrentHashMap<String, String>();
     private final ConcurrentMap<ProfileCloudOptions, String> parameters = new ConcurrentHashMap<ProfileCloudOptions, String>();
 
     public static final String DEFAULT_PORT = "80";
     public static final String DEFAULT_TTL = "300";
     public static final String DEFAULT_SIZE = "1000";
-    private static volatile long REQ_DELAY = 0;
+    private static volatile long REQ_DELAY = 200;
     private static volatile long LAST_REQ_TS = 0;
-    private long lastGetConfigTime;
+    private volatile long lastGetConfigTime;
     private long getConfigTimeOut = 10_000;
     App app;
     String companyId;
@@ -57,46 +56,32 @@ public class InnoHelper implements Serializable {
     int port;
     int cacheSize;
     int cacheTTL;
+    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    JsonParser jsonParser = new JsonParser();
 
     public InnoHelper(Map<String, String> config) throws MalformedURLException {
-        host =getOrError(config,API_SERVER);
+        host = getOrError(config, API_SERVER);
         appKey = getOrError(config, APP_KEY);
         appID = getOrError(config, APP_ID);
         bucketId = getOrError(config, BUCKET_ID);
-        companyId = getOrError(config,COMPANY_ID);
-        port = Integer.valueOf(config.getOrDefault(API_PORT, DEFAULT_PORT));
-        cacheSize = Integer.valueOf(config.getOrDefault(API_PORT, DEFAULT_SIZE));
-        cacheTTL = Integer.valueOf(config.getOrDefault(API_PORT, DEFAULT_TTL));
+        companyId = getOrError(config, COMPANY_ID);
+        port = Integer.valueOf(config.get(API_PORT) != null ? config.get(API_PORT) : DEFAULT_PORT);
+        cacheSize = Integer.valueOf(config.get(CACHE_SIZE) != null ? config.get(CACHE_SIZE) : DEFAULT_SIZE);
+        cacheTTL = Integer.valueOf(config.get(CACHE_TTL) != null ? config.get(CACHE_TTL) : DEFAULT_TTL);
         if (!host.startsWith("http")) {
-            host = "http://" + host;
+            host = "https://" + host;
         }
+        httpClient.interceptors().add(new ThrottlingInterceptor(100));
         this.hostWithVersion = new URL(host + ":" + port + "/" + API_VERSION);
-        withHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
-        withHeader(HttpHeaders.ACCEPT, "application/json; charset=utf-8");
-        withAuth(new AppKey(appKey));
+        this.headers.put(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
+        this.headers.put(HttpHeaders.ACCEPT, "application/json; charset=utf-8");
+        this.parameters.put(ProfileCloudOptions.app_key, appKey);
     }
 
-    String getOrError(Map<String, String> config,String field){
-        if (!config.containsKey(field)){
-            throw new IllegalArgumentException("In the settings missing a required field "+ field);
-        }
-        else return config.get(field);
-    }
-    public InnoHelper withAuth(AuthMethod auth) {
-        if (auth != null) {
-            auth.authorize(parameters, headers);
-        }
-        return this;
-    }
-
-    public InnoHelper withHeader(String header, String value) {
-        this.headers.put(header, value);
-        return this;
-    }
-
-    public InnoHelper withParameter(ProfileCloudOptions key, String value) {
-        this.parameters.put(key, value);
-        return this;
+    String getOrError(Map<String, String> config, String field) {
+        if (!config.containsKey(field)) {
+            throw new IllegalArgumentException("In the settings missing a required field " + field);
+        } else return config.get(field);
     }
 
     public void setMaxRequestsPerSecond(int rps) {
@@ -108,76 +93,112 @@ public class InnoHelper implements Serializable {
         logger.info("Set global request delay of " + REQ_DELAY + "ms");
     }
 
-    private void delay() {
-        if (REQ_DELAY > 0) {
-            long toSleep = (LAST_REQ_TS + REQ_DELAY) - System.currentTimeMillis();
-            if (toSleep > 0) {
-                try {
-                    logger.log(Level.FINE, "Last request was done at " + LAST_REQ_TS + " Sleeping for " + toSleep + "ms (delay per request is " + REQ_DELAY + "ms)");
-                    Thread.sleep(toSleep);
-                } catch (InterruptedException e) {
-                    logger.log(Level.WARNING, "Interrupted!", e);
-                }
-            }
-            LAST_REQ_TS = System.currentTimeMillis();
-        }
-    }
+//    private void delay() {
+//        if (REQ_DELAY > 0) {
+//            long toSleep = (LAST_REQ_TS + REQ_DELAY) - System.currentTimeMillis();
+//            if (toSleep > 0) {
+//                try {
+//                    logger.log(Level.FINE, "Last request was done at " + LAST_REQ_TS + " Sleeping for " + toSleep + "ms (delay per request is " + REQ_DELAY + "ms)");
+//                    Thread.sleep(toSleep);
+//                } catch (InterruptedException e) {
+//                    logger.log(Level.WARNING, "Interrupted!", e);
+//                }
+//            }
+//            LAST_REQ_TS = System.currentTimeMillis();
+//        }
+//    }
 
-    public App getApp() throws ExecutionException, InterruptedException {
-        if (lastGetConfigTime + getConfigTimeOut < System.currentTimeMillis() ) {
-            app = getObject(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(apps, appID), App.class).get().getRight();
-            lastGetConfigTime= System.currentTimeMillis();
+    public App getApp() throws IOException, ExecutionException, InterruptedException {
+        if (lastGetConfigTime + getConfigTimeOut < System.currentTimeMillis()) {
+            app = getObjectSync(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(apps, appID),App.class);
+            lastGetConfigTime = System.currentTimeMillis();
         }
         return app;
     }
 
-//    public FutureTask<Pair<Integer, App>> getApp() throws ExecutionException, InterruptedException {
-//        return getObject(new RestURI(hostWithVersion)
-//                .withResource(companies, companyId)
-//                .withResource(buckets, bucketId)
-//                .withResource(apps, appID), App.class);
-//    }
-
-    public FutureTask<Pair<Integer, Profile>> getProfile(String profileId) throws InterruptedException, ExecutionException {
-        return getObject(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(profiles, profileId), Profile.class);
+    <T> T processResponse(Response response, Class<T> aClass) throws IOException {
+        T result = null;
+        if (response.isSuccessful()){
+            JsonObject container = (JsonObject) jsonParser.parse(response.body().string());
+            String fieldName = aClass.getSimpleName().toLowerCase();
+            if (container.has(fieldName)) {
+                result = InnoHelperUtils.getGson().fromJson(container.get(fieldName), aClass);
+            }
+        }else  {
+            System.out.println("http error :" + response.code() + " [" + response.message() + "]") ;
+            //todo handle error , trigger throttling
+        }
+        return result;
     }
 
-    public FutureTask<Pair<Integer, Profile>> saveProfile(Profile profile) throws ExecutionException {
-        return postObject(new RestURI(hostWithVersion)
+    public Profile getProfile(String profileId) throws InterruptedException, ExecutionException, IOException {
+        return getObjectSync(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(profiles, profileId), Profile.class);
+    }
+
+    private <T> T getObjectSync(RestURI restURI, Class<T> tClass) throws ExecutionException, InterruptedException, IOException {
+//        delay();
+        URL endpoint = build(restURI);
+        Request request = new Request.Builder().url(endpoint).get().build();
+        Call call = httpClient.newCall(request);
+        Response response = call.execute();
+        return processResponse(response, tClass);
+    }
+
+    private void getObjectAsync(RestURI restURI, Callback callback) throws ExecutionException, InterruptedException, IOException {
+        URL endpoint = build(restURI);
+        Request request = new Request.Builder().url(endpoint).get().build();
+        Call call = httpClient.newCall(request);
+        call.enqueue(callback);
+    }
+
+    private Response postObjectSync(RestURI url, Object toUpdate) throws IOException {
+//        delay();
+        if (toUpdate != null) {
+            URL endpoint = build(url);
+
+            RequestBody requestBody = RequestBody.create(JSON, InnoHelperUtils.getGson().toJson(toUpdate));
+            Request request = new Request.Builder().url(endpoint).post(requestBody).build();
+            return httpClient.newCall(request).execute();
+        } else {
+            throw new UnsupportedOperationException(HttpMethods.POST + " operation does not support NULL!");
+        }
+    }
+    public Response saveProfile(Profile profile) throws  IOException {
+        return postObjectSync(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
                 .withResource(buckets, bucketId)
-                .withResource(profiles, profile.getId()), profile, Profile.class);
+                .withResource(profiles, profile.getId()), profile);
     }
-
-    public FutureTask<Pair<Integer, Profile>> mergeProfile(String companyId, String bucketId, String canonicalProfile, String... tempProfiles) throws ExecutionException {
+//
+    public Response mergeProfile(String companyId, String bucketId, String canonicalProfile, String... tempProfiles) throws ExecutionException, IOException {
         Profile mergeProfile = new Profile();
         mergeProfile.setId(canonicalProfile);
         mergeProfile.setMergedProfiles(new HashSet<String>(Arrays.asList(tempProfiles)));
-        return postObject(new RestURI(hostWithVersion)
+        return postObjectSync(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
                 .withResource(buckets, bucketId)
-                .withResource(profiles, canonicalProfile), mergeProfile, Profile.class);
+                .withResource(profiles, canonicalProfile), mergeProfile);
     }
-
-    public FutureTask<Pair<Integer, Segment[]>> getSegments() throws InterruptedException, ExecutionException {
-        return getObject(new RestURI(hostWithVersion)
+//
+    public Segment[] getSegments() throws InterruptedException, ExecutionException, IOException {
+        return getObjectSync(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
                 .withResource(buckets, bucketId)
                 .withResources(segments), Segment[].class);
     }
-
-    public FutureTask<Pair<Integer, Segment>> getSegment(String segmentId) throws InterruptedException, ExecutionException {
-        return getObject(new RestURI(hostWithVersion)
+//
+    public Segment getSegment(String segmentId) throws IOException, ExecutionException, InterruptedException {
+        return getObjectSync(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
                 .withResource(buckets, bucketId)
                 .withResource(segments, segmentId), Segment.class);
     }
 
     // todo
-    public IqlResult[] evaluateProfile(String profileId, boolean doFiltering) throws InterruptedException, ExecutionException, IqlSyntaxException {
-        Segment[] segments = getSegments().get().getRight();
+    public IqlResult[] evaluateProfile(String profileId, boolean doFiltering) throws InterruptedException, ExecutionException, IqlSyntaxException, IOException {
+        Segment[] segments = getSegments();
         if (segments.length > 0) {
-            Profile toEvaluate = getProfile(profileId).get().getRight();
+            Profile toEvaluate = getProfile(profileId);
             IqlResult[] toReturn = new IqlResult[segments.length];
             for (int i = 0; i < segments.length; i++) {
                 toReturn[i] = evaluateProfile(toEvaluate, segments[i], doFiltering);
@@ -188,9 +209,6 @@ public class InnoHelper implements Serializable {
         }
     }
 
-//    public IqlResult evaluateProfile(String profileId, String segmentId, boolean doFiltering) throws InterruptedException, ExecutionException, IqlSyntaxException {
-//        return evaluateProfile(getProfile(profileId), getSegment(segmentId), doFiltering);
-//    }
 
     public IqlResult evaluateProfile(Profile profile, Segment segment, boolean doFiltering) throws IqlSyntaxException {
         assert profile != null;
@@ -198,30 +216,6 @@ public class InnoHelper implements Serializable {
         return SegmentUtil.getIqlResult(segment.getIql(), profile, doFiltering);
     }
 
-    private <T> FutureTask<Pair<Integer, T>> getObject(RestURI url, Class<T> tClass) throws ExecutionException, InterruptedException {
-        URL endpoint = build(url);
-        return process(endpoint, HttpMethods.GET, null, tClass);
-    }
-
-
-    private <T> FutureTask<Pair<Integer, T>> postObject(RestURI url, Object toUpdate, Class<T> toCast) throws ExecutionException {
-        if (toUpdate != null) {
-            URL endpoint = build(url);
-            return process(endpoint, HttpMethods.POST, InnoHelperUtils.getGson().toJson(toUpdate), toCast);
-        } else {
-            throw new UnsupportedOperationException(HttpMethods.POST + " operation does not support NULL!");
-        }
-
-    }
-
-    private <T> FutureTask<Pair<Integer, T>> process(URL orig, String method, String body, Class<T> toCast) {
-        delay();
-        try {
-            return httpClient.sendHttpRequestAsync(orig, method, body, headers, toCast);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     private URL build(RestURI uri) {
         Map<ProfileCloudOptions, String> execParameters;
@@ -233,11 +227,11 @@ public class InnoHelper implements Serializable {
         }
     }
 
-    public <T> T getCustom(String key, Class<T> aClass) throws ExecutionException, InterruptedException {
+    public <T> T getCustom(String key, Class<T> aClass) throws ExecutionException, InterruptedException, IOException {
         return InnoHelperUtils.getGson().fromJson(getCustom(key), aClass);
     }
 
-    public JsonElement getCustom(String key) throws ExecutionException, InterruptedException {
+    public JsonElement getCustom(String key) throws ExecutionException, InterruptedException, IOException {
         return getApp().getCustom().get(key);
     }
 
@@ -304,10 +298,6 @@ public class InnoHelper implements Serializable {
 
     public void setCacheTTL(int cacheTTL) {
         this.cacheTTL = cacheTTL;
-    }
-
-    public void setHttpClient(NativeHttpClient httpClient) {
-        this.httpClient = httpClient;
     }
 
 }
