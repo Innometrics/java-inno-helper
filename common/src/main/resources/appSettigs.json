@@ -1,0 +1,69 @@
+{
+  "app": {
+    "id": "sql-connector",
+    "eventListeners": [
+      {
+        "id": "3771",
+        "displayName": "bobo",
+        "collectApp": "web",
+        "section": "sfs",
+        "definitionId": "bobo"
+      }
+    ],
+    "custom": {
+      "rules": [
+        {
+          "id": "1430809503045",
+          "name": "test1",
+          "event": "web/sfs/bobo",
+          "ruleSettings": {
+            "section": "test",
+            "endpoint": "mysql://root:123@localhost:3306/test",
+            "query_template": "INSERT INTO test (url) VALUES *{('*|url|*')}* ",
+            "max_butch": 50,
+            "max_connection": 10,
+            "autoMapping": false
+          },
+          "fieldSets": [
+            {
+              "setName": "mapping",
+              "fields": [
+                {
+                  "fieldName": "url",
+                  "type": "EVENT_DATA",
+                  "valueRef": "page-url",
+                  "required": false,
+                  "fieldSettings": {
+                    "convertType": "STRING",
+                    "timeFormat": ""
+                  }
+                },
+                {
+                  "fieldName": "id",
+                  "type": "PROFILE_ID",
+                  "valueRef": "",
+                  "required": false,
+                  "fieldSettings": {
+                    "convertType": "STRING",
+                    "timeFormat": ""
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "someKey": {
+        "string": "Kurlik",
+        "anInt": 1,
+        "aFloat": 3.3
+      }
+    },
+    "settings": {},
+    "rules": []
+  },
+  "links": {
+    "self": "http://api.innomdc.com/v1/companies/4/buckets/killpack/apps/sql-connector/",
+    "custom": "http://api.innomdc.com/v1/companies/4/buckets/killpack/apps/sql-connector/custom"
+  }
+}

@@ -5,19 +5,13 @@ import java.util.Map;
 
 public class FieldsEntry {
 
-    private Map<String,Object> fieldSettings;
-    private Integer order;
+    private Map<String, Object> fieldSettings;
     private String valueRef;
     private String value;
     private String fieldName;
     private String type;
     private Boolean required;
     private String srcType;
-    private Boolean targetType;
-
-    public void setOrder(Integer order) {
-        this.order = order;
-    }
 
     public void setFieldSettings(Map<String, Object> fieldSettings) {
         this.fieldSettings = fieldSettings;
@@ -41,10 +35,6 @@ public class FieldsEntry {
 
     public void setRequired(Boolean required) {
         this.required = required;
-    }
-
-    public Integer getOrder() {
-        return order;
     }
 
     public Map<String, Object> getFieldSettings() {
@@ -79,11 +69,4 @@ public class FieldsEntry {
         this.srcType = srcType;
     }
 
-    public Boolean getTargetType() {
-        return targetType;
-    }
-
-    public void setTargetType(Boolean targetType) {
-        this.targetType = targetType;
-    }
 }

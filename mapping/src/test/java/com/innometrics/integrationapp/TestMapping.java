@@ -10,17 +10,13 @@ import com.innometrics.integrationapp.model.Attribute;
 import com.innometrics.integrationapp.model.Event;
 import com.innometrics.integrationapp.model.Profile;
 import com.innometrics.integrationapp.model.Session;
-import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.Reader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -33,18 +29,8 @@ import java.util.concurrent.ExecutionException;
 
 
 public class TestMapping {
-    Map<String, String> config = new HashMap<>();
 
-    @Before
-    public void init() {
-        config.put(InnoHelperUtils.API_SERVER, "http://api.innomdc.com");
-        config.put(InnoHelperUtils.APP_KEY, "89oXs4UmZ325uDuA");
-        config.put(InnoHelperUtils.BUCKET_ID, "bucket1");
-        config.put(InnoHelperUtils.COMPANY_ID, "4");
-        config.put(InnoHelperUtils.APP_ID, "sql-connector");
-    }
-
-    InnoTransformer getTransformer(String settingsFile) throws ExecutionException, InterruptedException, FileNotFoundException {
+    InnoTransformer getTransformer(String settingsFile) throws ExecutionException, InterruptedException, IOException {
         InnoHelper innoHelper = Mockito.mock(InnoHelper.class);
         RulesEntry[] rulesEntries = new Gson().fromJson(new FileReader(new File(getClass().getResource(settingsFile).getPath())), RulesEntry[].class);
         Mockito.when(innoHelper.getCustom(InnoTransformer.RULES, RulesEntry[].class)).thenReturn(rulesEntries);
@@ -57,7 +43,7 @@ public class TestMapping {
     }
 
     @Test
-    public void testTransformFromProfile() throws ExecutionException, InterruptedException, MalformedURLException, FileNotFoundException, ProfileDataException {
+    public void testTransformFromProfile() throws ExecutionException, InterruptedException, IOException, ProfileDataException {
         InnoTransformer innoTransformer = getTransformer("/testField.json");
         Profile profile = new Profile();
         profile.setId("test");
@@ -75,7 +61,7 @@ public class TestMapping {
     }
 
     @Test
-    public void testTransformToProfile() throws MalformedURLException, ExecutionException, InterruptedException, FileNotFoundException {
+    public void testTransformToProfile() throws IOException, ExecutionException, InterruptedException {
         InnoTransformer innoTransformer = getTransformer("/testFieldToProfile.json");
         Map<String, Object> data = new HashMap<>();
         data.put("test", "testValue"); // (f.e. csv header and  cell)
@@ -84,7 +70,7 @@ public class TestMapping {
     }
 
     @Test
-    public void testDataLevelfromProfile() throws ProfileDataException, InterruptedException, ExecutionException, FileNotFoundException {
+    public void testDataLevelfromProfile() throws ProfileDataException, InterruptedException, ExecutionException, IOException {
         String time = RandomStringUtils.randomAlphanumeric(12);
         String url = RandomStringUtils.random(10);
         String profileId = RandomStringUtils.randomNumeric(10);
@@ -153,7 +139,7 @@ public class TestMapping {
     }
 
     @Test
-    public void testDataLevelToProfile() throws ProfileDataException, InterruptedException, ExecutionException, FileNotFoundException {
+    public void testDataLevelToProfile() throws ProfileDataException, InterruptedException, ExecutionException, IOException {
         String time = RandomStringUtils.randomAlphanumeric(12);
         String url = RandomStringUtils.randomNumeric(10);
         String id = RandomStringUtils.randomNumeric(10);
@@ -182,7 +168,7 @@ public class TestMapping {
     }
 
     @Test
-    public void testDateConvert() throws ProfileDataException, ParseException, InterruptedException, ExecutionException, FileNotFoundException {
+    public void testDateConvert() throws ProfileDataException, ParseException, InterruptedException, ExecutionException, IOException {
         String time ="2015-01-01 11:11:11";
         Profile profile = new Profile();
         Event event = new Event();

@@ -19,6 +19,8 @@ public class InnoHelperUtils {
     public static final String APP_KEY = "INNO_APP_KEY";
     public static final String API_SERVER = "INNO_API_HOST";
     public static final String API_PORT = "INNO_API_PORT";
+    public static final String CONTENT_TYPE ="Content-Type";
+    public static final String ACCEPT ="Accept";
     static final Gson gson = initGson();
     private static final char[] chars = "1234567890abcdefghijklmnopqrstuvwxyz".toCharArray();
     // Added required cache params:

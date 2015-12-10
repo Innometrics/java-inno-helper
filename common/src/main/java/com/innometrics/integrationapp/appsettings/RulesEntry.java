@@ -12,7 +12,6 @@ public class RulesEntry {
     private List<FieldSetsEntry> fieldSets = new ArrayList<>();
     private String event;
     private String name;
-    private List<String> segmentsLinked;
 
     public String getId() {
         return id;
@@ -22,13 +21,6 @@ public class RulesEntry {
         this.id = id;
     }
 
-    public List<String> getSegmentsLinked() {
-        return segmentsLinked;
-    }
-
-    public void setSegmentsLinked(List<String> segmentsLinked) {
-        this.segmentsLinked = segmentsLinked;
-    }
 
     public String getName() {
         return name;

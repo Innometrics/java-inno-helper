@@ -12,7 +12,6 @@ public class App {
 
     private Map<String, JsonElement> custom = new HashMap<>();
 
-    private List<String> contacts;
     private Map<String, String> settings = new HashMap<>();
 
     public String getId() {
@@ -23,13 +22,6 @@ public class App {
         this.id = id;
     }
 
-    public List<String> getContacts() {
-        return contacts;
-    }
-
-    public void setContacts(List<String> contacts) {
-        this.contacts = contacts;
-    }
 
     public Map<String, JsonElement> getCustom() {
         return custom;

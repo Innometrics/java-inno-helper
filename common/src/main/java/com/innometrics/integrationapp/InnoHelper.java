@@ -3,12 +3,9 @@ package com.innometrics.integrationapp;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.innometrics.integrationapp.constants.HttpHeaders;
-import com.innometrics.integrationapp.constants.ProfileCloudOptions;
 import com.innometrics.integrationapp.model.App;
 import com.innometrics.integrationapp.model.Profile;
 import com.innometrics.integrationapp.model.Segment;
-import com.innometrics.integrationapp.utils.HttpMethods;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import com.innometrics.integrationapp.utils.RestURI;
 import com.innometrics.integrationapp.utils.SegmentUtil;
@@ -38,7 +35,7 @@ public class InnoHelper implements Serializable {
     private final URL hostWithVersion;
     private OkHttpClient httpClient = new OkHttpClient();
     private final ConcurrentMap<String, String> headers = new ConcurrentHashMap<String, String>();
-    private final ConcurrentMap<ProfileCloudOptions, String> parameters = new ConcurrentHashMap<ProfileCloudOptions, String>();
+    private final ConcurrentMap<String, String> parameters = new ConcurrentHashMap<String, String>();
 
     public static final String DEFAULT_PORT = "80";
     public static final String DEFAULT_TTL = "300";
@@ -73,9 +70,9 @@ public class InnoHelper implements Serializable {
         }
         httpClient.interceptors().add(new ThrottlingInterceptor(100));
         this.hostWithVersion = new URL(host + ":" + port + "/" + API_VERSION);
-        this.headers.put(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
-        this.headers.put(HttpHeaders.ACCEPT, "application/json; charset=utf-8");
-        this.parameters.put(ProfileCloudOptions.app_key, appKey);
+        this.headers.put(InnoHelperUtils.CONTENT_TYPE, "application/json; charset=utf-8"); //todo switch to Okhttp
+        this.headers.put(InnoHelperUtils.ACCEPT, "application/json; charset=utf-8");
+        this.parameters.put("app_key", appKey);
     }
 
     String getOrError(Map<String, String> config, String field) {
@@ -93,20 +90,6 @@ public class InnoHelper implements Serializable {
         logger.info("Set global request delay of " + REQ_DELAY + "ms");
     }
 
-//    private void delay() {
-//        if (REQ_DELAY > 0) {
-//            long toSleep = (LAST_REQ_TS + REQ_DELAY) - System.currentTimeMillis();
-//            if (toSleep > 0) {
-//                try {
-//                    logger.log(Level.FINE, "Last request was done at " + LAST_REQ_TS + " Sleeping for " + toSleep + "ms (delay per request is " + REQ_DELAY + "ms)");
-//                    Thread.sleep(toSleep);
-//                } catch (InterruptedException e) {
-//                    logger.log(Level.WARNING, "Interrupted!", e);
-//                }
-//            }
-//            LAST_REQ_TS = System.currentTimeMillis();
-//        }
-//    }
 
     public App getApp() throws IOException, ExecutionException, InterruptedException {
         if (lastGetConfigTime + getConfigTimeOut < System.currentTimeMillis()) {
@@ -136,7 +119,6 @@ public class InnoHelper implements Serializable {
     }
 
     private <T> T getObjectSync(RestURI restURI, Class<T> tClass) throws ExecutionException, InterruptedException, IOException {
-//        delay();
         URL endpoint = build(restURI);
         Request request = new Request.Builder().url(endpoint).get().build();
         Call call = httpClient.newCall(request);
@@ -144,15 +126,14 @@ public class InnoHelper implements Serializable {
         return processResponse(response, tClass);
     }
 
-    private void getObjectAsync(RestURI restURI, Callback callback) throws ExecutionException, InterruptedException, IOException {
-        URL endpoint = build(restURI);
-        Request request = new Request.Builder().url(endpoint).get().build();
-        Call call = httpClient.newCall(request);
-        call.enqueue(callback);
-    }
+//    private void getObjectAsync(RestURI restURI, Callback callback) throws ExecutionException, InterruptedException, IOException {
+//        URL endpoint = build(restURI);
+//        Request request = new Request.Builder().url(endpoint).get().build();
+//        Call call = httpClient.newCall(request);
+//        call.enqueue(callback);
+//    }
 
     private Response postObjectSync(RestURI url, Object toUpdate) throws IOException {
-//        delay();
         if (toUpdate != null) {
             URL endpoint = build(url);
 
@@ -160,7 +141,7 @@ public class InnoHelper implements Serializable {
             Request request = new Request.Builder().url(endpoint).post(requestBody).build();
             return httpClient.newCall(request).execute();
         } else {
-            throw new UnsupportedOperationException(HttpMethods.POST + " operation does not support NULL!");
+            throw new UnsupportedOperationException("POST operation does not support NULL!");
         }
     }
     public Response saveProfile(Profile profile) throws  IOException {
@@ -218,7 +199,7 @@ public class InnoHelper implements Serializable {
 
 
     private URL build(RestURI uri) {
-        Map<ProfileCloudOptions, String> execParameters;
+        Map<String, String> execParameters;
         execParameters = this.parameters;
         try {
             return uri.build(execParameters);

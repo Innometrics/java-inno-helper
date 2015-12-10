@@ -1,7 +1,6 @@
 package com.innometrics.integrationapp.utils;
 
 
-import com.innometrics.integrationapp.constants.ProfileCloudOptions;
 import com.innometrics.integrationapp.constants.Resources;
 
 import java.io.UnsupportedEncodingException;
@@ -44,20 +43,18 @@ public class RestURI {
         }
     }
 
-    public URL build(Map<ProfileCloudOptions, String> parameters) throws MalformedURLException {
-        for (ProfileCloudOptions paraKey : parameters.keySet()) {
+    public URL build(Map<String, String> parameters) throws MalformedURLException {
+        for (String paraKey : parameters.keySet()) {
             String dim = "&";
             if (stringBuilder.indexOf("?") == -1) {
                 dim = "?";
             }
-            stringBuilder.append(dim).append(urlEncode(paraKey.name())).append("=").append(urlEncode(parameters.get(paraKey)));
+            stringBuilder.append(dim).append(urlEncode(paraKey)).append("=").append(urlEncode(parameters.get(paraKey)));
         }
         return new URL(stringBuilder.toString());
     }
 
-    public URL build() throws MalformedURLException {
-        return build(new HashMap<ProfileCloudOptions, String>(0));
-    }
+
 
     @Override
     public String toString() {
