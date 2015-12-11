@@ -1,6 +1,7 @@
 package com.innometrics.integrationapp.model;
 
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -8,9 +9,9 @@ import java.util.*;
 public class Session  extends Dirty {
 
     private String id  = InnoHelperUtils.getRandomID(8);
-    private Date createdAt;
-    private String collectApp;
-    private String section;
+    private Date createdAt = new Date();
+    private String collectApp =StringUtils.EMPTY;
+    private String section = StringUtils.EMPTY;
     private Map<String, Object> data = new HashMap<>();
     private List<Event> events = new ArrayList<Event>();
 

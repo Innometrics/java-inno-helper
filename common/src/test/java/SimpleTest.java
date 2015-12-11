@@ -16,10 +16,7 @@ import org.junit.Test;
 
 import java.io.*;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
@@ -168,7 +165,7 @@ public class SimpleTest {
     }
 
     @Test
-    public void Model() throws IOException, ExecutionException, InterruptedException {
+    public void testRulesEntry() throws IOException, ExecutionException, InterruptedException {
         RulesEntry rulesEntry = new RulesEntry();
         String event = "event";
         String id = "id";
@@ -196,29 +193,124 @@ public class SimpleTest {
         fieldsEntry.setSrcType(srcType);
         assertEquals(srcType, fieldsEntry.getSrcType());
 
-        String value= "value";
+        String value = "value";
         fieldsEntry.setValue(value);
         assertEquals(value, fieldsEntry.getValue());
 
-        String valueRef= "valueRef";
+        String valueRef = "valueRef";
         fieldsEntry.setValueRef(valueRef);
         assertEquals(valueRef, fieldsEntry.getValueRef());
 
-        String type= "type";
+        String type = "type";
         fieldsEntry.setType(type);
         assertEquals(type, fieldsEntry.getType());
-        Map<String ,Object> map  = new HashMap<>();
-        map.put("1",1);
+        Map<String, Object> map = new HashMap<>();
+        map.put("1", 1);
         fieldsEntry.setFieldSettings(map);
-        Assert.assertEquals(map,fieldsEntry.getFieldSettings());
+        Assert.assertEquals(map, fieldsEntry.getFieldSettings());
         fields.add(fieldsEntry);
         setsEntry.setFields(fields);
-        assertEquals(fields,setsEntry.getFields());
+        assertEquals(fields, setsEntry.getFields());
         fieldsets.add(setsEntry);
         rulesEntry.setFieldSets(fieldsets);
-        assertEquals(fieldsets,rulesEntry.getFieldSets());
+        assertEquals(fieldsets, rulesEntry.getFieldSets());
         rulesEntry.setRuleSettings(map);
-        Assert.assertEquals(map,rulesEntry.getRuleSettings());
+        Assert.assertEquals(map, rulesEntry.getRuleSettings());
+
+    }
+
+    @Test
+    public void testProfile() {
+        Profile profile = new Profile();
+        Date date =new Date();
+        String string = "asd";
+        profile.setId(string);
+        Map<String,Object> map = new HashMap<>();
+        map.put("key",1);
+//
+        Event event = new Event();
+        event.setId(string);
+        event.setCreatedAt(date);
+        event.setDefinitionId(string);
+        event.setData(map);
+        event.putData("Key3", 3);
+        assertEquals(event.getId(), string);
+        assertEquals(event.getCreatedAt(), date);
+        assertEquals(event.getDefinitionId(),string);
+        assertEquals(event.getData(),map);
+        //
+        Session session =new Session();
+        session.setCollectApp(string);
+        session.setCreatedAt(date);
+        session.setSection(string);
+        session.setData(map);
+        session.addEvent(event);
+        session.setEvents(Collections.singletonList(event));
+        session.putData("key4", 4);
+        assertEquals(session.getCollectApp(), string);
+        assertEquals(session.getCreatedAt(), date);
+        assertEquals(session.getSection(), string);
+        assertEquals(session.getData(), map);
+        assertEquals(session.getEvents(),Collections.singletonList(event));
+
+        Attribute  attribute = new Attribute();
+        attribute.setSection(string);
+        attribute.setCollectApp(string);
+        attribute.setData(map);
+        attribute.putData("Key2", 2);
+        assertEquals(attribute.getCollectApp(), string);
+        assertEquals(attribute.getSection(),string);
+        assertEquals(attribute.getData(),map);
+
+        profile.setCreatedAt(date);
+        profile.addAttribute(attribute);
+        profile.setAttribute(string, string, string, string);
+        profile.setAttributes(Collections.singletonList(attribute));
+        profile.addSession(session);
+        profile.setSessions(Collections.singletonList(session));
+        assertEquals(profile.getId(),string);
+        assertEquals(profile.getSessions(),Collections.singletonList(session));
+        assertEquals(profile.getAttributes(),Collections.singletonList(attribute));
+
+        Event event1 = new Event();
+        event1.setId("123");
+        Event event2 = new Event();
+        event2.setId("123");
+        assertEquals(event1,event2);
+
+        Attribute attribute1 =new Attribute();
+        attribute1.setCollectApp("123");
+        attribute1.setSection("321");
+        Attribute attribute2 =new Attribute();
+        attribute2.setCollectApp("123");
+        attribute2.setSection("321");
+        assertEquals(attribute1,attribute2);
+
+        Session session1 = new Session();
+        session1.setCollectApp("123");
+        session1.setId("321");
+        session1.addEvent(event1);
+        session1.setCreatedAt(date);
+        Session session2 = new Session();
+        session2.setCollectApp("123");
+        session2.setId("321");
+        session2.addEvent(event2);
+        session2.setCreatedAt(date);
+        assertEquals(session1,session2);
+
+        Profile profile1 = new Profile();
+        profile1.setId("123");
+        profile1.addSession(session1);
+        profile1.addAttribute(attribute1);
+        profile1.setCreatedAt(date);
+
+        Profile profile2 = new Profile();
+        profile2.setId("123");
+        profile2.addSession(session2);
+        profile2.addAttribute(attribute2);
+        profile2.setCreatedAt(date);
+        assertEquals(profile1,profile2);
+        assertEquals(profile1.hashCode(),profile2.hashCode());
 
     }
 
