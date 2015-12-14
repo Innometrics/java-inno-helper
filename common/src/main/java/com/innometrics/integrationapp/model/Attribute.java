@@ -60,7 +60,6 @@ public class Attribute extends Dirty {
         return collectApp.equals(attribute.collectApp) &&
                 data.equals(attribute.data) &&
                 section.equals(attribute.section);
-
     }
 
     @Override

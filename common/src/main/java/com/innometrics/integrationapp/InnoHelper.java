@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.innometrics.integrationapp.constants.Resources.*;
@@ -34,14 +33,12 @@ public class InnoHelper implements Serializable {
     private static final String API_VERSION = "v1";
     private final URL hostWithVersion;
     private OkHttpClient httpClient = new OkHttpClient();
-    private final ConcurrentMap<String, String> headers = new ConcurrentHashMap<String, String>();
     private final ConcurrentMap<String, String> parameters = new ConcurrentHashMap<String, String>();
 
     public static final String DEFAULT_PORT = "80";
     public static final String DEFAULT_TTL = "300";
     public static final String DEFAULT_SIZE = "1000";
     private static volatile long REQ_DELAY = 200;
-    private static volatile long LAST_REQ_TS = 0;
     private volatile long lastGetConfigTime;
     private long getConfigTimeOut = 10_000;
     App app;
@@ -70,8 +67,6 @@ public class InnoHelper implements Serializable {
         }
         httpClient.interceptors().add(new ThrottlingInterceptor(100));
         this.hostWithVersion = new URL(host + ":" + port + "/" + API_VERSION);
-        this.headers.put(InnoHelperUtils.CONTENT_TYPE, "application/json; charset=utf-8"); //todo switch to Okhttp
-        this.headers.put(InnoHelperUtils.ACCEPT, "application/json; charset=utf-8");
         this.parameters.put("app_key", appKey);
     }
 
@@ -79,15 +74,6 @@ public class InnoHelper implements Serializable {
         if (!config.containsKey(field)) {
             throw new IllegalArgumentException("In the settings missing a required field " + field);
         } else return config.get(field);
-    }
-
-    public void setMaxRequestsPerSecond(int rps) {
-        setDelayMS(1000 / rps);
-    }
-
-    public void setDelayMS(long rps) {
-        REQ_DELAY = rps;
-        logger.info("Set global request delay of " + REQ_DELAY + "ms");
     }
 
 
@@ -109,7 +95,6 @@ public class InnoHelper implements Serializable {
             }
         }else  {
             System.out.println("http error :" + response.code() + " [" + response.message() + "]") ;
-            //todo handle error , trigger throttling
         }
         return result;
     }
@@ -221,64 +206,23 @@ public class InnoHelper implements Serializable {
         return companyId;
     }
 
-    public void setCompanyId(String companyId) {
-        this.companyId = companyId;
-    }
-
     public String getBucketId() {
         return bucketId;
-    }
-
-    public void setBucketId(String bucketId) {
-        this.bucketId = bucketId;
     }
 
     public String getHost() {
         return host;
     }
 
-    public void setHost(String host) {
-        this.host = host;
-    }
-
     public String getAppKey() {
         return appKey;
-    }
-
-    public void setAppKey(String appKey) {
-        this.appKey = appKey;
     }
 
     public String getAppID() {
         return appID;
     }
 
-    public void setAppID(String appID) {
-        this.appID = appID;
-    }
-
     public int getPort() {
         return port;
     }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public int getCacheSize() {
-        return cacheSize;
-    }
-
-    public void setCacheSize(int cacheSize) {
-        this.cacheSize = cacheSize;
-    }
-
-    public int getCacheTTL() {
-        return cacheTTL;
-    }
-
-    public void setCacheTTL(int cacheTTL) {
-        this.cacheTTL = cacheTTL;
-    }
-
 }

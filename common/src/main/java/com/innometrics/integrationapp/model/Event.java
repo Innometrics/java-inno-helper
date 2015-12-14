@@ -60,18 +60,27 @@ public class Event extends Dirty {
         this.session = session;
     }
 
-    //todo add data equals
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Event)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
+
         Event event = (Event) o;
-        return id.equals(event.id);
+
+        if (createdAt != null ? !createdAt.equals(event.createdAt) : event.createdAt != null) return false;
+        if (data != null ? !data.equals(event.data) : event.data != null) return false;
+        if (definitionId != null ? !definitionId.equals(event.definitionId) : event.definitionId != null) return false;
+        if (id != null ? !id.equals(event.id) : event.id != null) return false;
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (createdAt != null ? createdAt.hashCode() : 0);
+        result = 31 * result + (definitionId != null ? definitionId.hashCode() : 0);
+        result = 31 * result + (data != null ? data.hashCode() : 0);
+        return result;
     }
 
     @Override

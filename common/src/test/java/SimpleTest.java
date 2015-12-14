@@ -9,7 +9,6 @@ import com.squareup.okhttp.Response;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +49,12 @@ public class SimpleTest {
     @Test
     public void testCreateProfile() throws IOException, ExecutionException, InterruptedException {
         InnoHelper innoHelper = new InnoHelper(config);
+        assertEquals(innoHelper.getAppID(),config.get(InnoHelperUtils.APP_ID));
+        assertEquals(innoHelper.getAppKey(),config.get(InnoHelperUtils.APP_KEY));
+        assertEquals(innoHelper.getCompanyId(),config.get(InnoHelperUtils.COMPANY_ID));
+        assertEquals(innoHelper.getBucketId(),config.get(InnoHelperUtils.BUCKET_ID));
+        assertEquals(innoHelper.getHost(),config.get(InnoHelperUtils.API_SERVER));
+        assertEquals(String.valueOf(innoHelper.getPort()),config.get(InnoHelperUtils.API_PORT));
         Profile profile = new Profile();
         Session session = new Session();
         Event event = new Event();
@@ -69,7 +74,7 @@ public class SimpleTest {
         profile.setId("002");
         server.enqueue(new MockResponse().setResponseCode(500));
         Response response = innoHelper.saveProfile(profile);
-        System.out.println(response.body().string());
+        assertEquals(response.code(),500);
     }
 
     @Test
@@ -330,7 +335,6 @@ public class SimpleTest {
 
     @Test
     public void testDirtyProfile() throws MalformedURLException, ExecutionException, InterruptedException {
-        InnoHelper innoHelper = new InnoHelper(config);
         Profile profile = new Profile();
         Session session = new Session();
         session.setId("`123123");
@@ -342,12 +346,12 @@ public class SimpleTest {
         profile.resetDirty();
 //        Event event2 = new Event();
 //        event2.setId("q34");
-        event.putData("adadasdas", 121233);
 //        event2.setDefinitionId("asaadaaasdaasdsad");
 //        session.addEvent(event2);
 //        session.setDirty(true);
-        System.out.println(InnoHelperUtils.getGson().toJson(profile));
-        System.out.println(new Gson().toJson(profile));
+        assertNotEquals(InnoHelperUtils.getGson().toJson(profile), new Gson().toJson(profile));
+        event.putData("adadasdas", 121233);
+        assertEquals(InnoHelperUtils.getGson().toJson(profile), new Gson().toJson(profile));
     }
 
 
