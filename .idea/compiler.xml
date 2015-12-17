@@ -23,14 +23,15 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
-        <module name="common" />
-        <module name="mapping" />
+        <module name="java-inno-helper" />
+        <module name="java-inno-helper-mapping" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="common" target="1.8" />
-      <module name="java-inno-helper" target="1.8" />
-      <module name="mapping" target="1.8" />
+      <module name="common" target="1.7" />
+      <module name="java-inno-helper" target="1.7" />
+      <module name="java-inno-helper-mapping" target="1.7" />
+      <module name="mapping" target="1.7" />
     </bytecodeTargetLevel>
   </component>
 </project>

@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/common/common.iml" filepath="$PROJECT_DIR$/common/common.iml" />
-      <module fileurl="file://$PROJECT_DIR$/java-inno-helper.iml" filepath="$PROJECT_DIR$/java-inno-helper.iml" />
-      <module fileurl="file://$PROJECT_DIR$/mapping/mapping.iml" filepath="$PROJECT_DIR$/mapping/mapping.iml" />
+      <module fileurl="file://$PROJECT_DIR$/java-inno-helper/java-inno-helper.iml" filepath="$PROJECT_DIR$/java-inno-helper/java-inno-helper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/java-inno-helper-mapping/java-inno-helper-mapping.iml" filepath="$PROJECT_DIR$/java-inno-helper-mapping/java-inno-helper-mapping.iml" />
+      <module fileurl="file://$PROJECT_DIR$/java-inno-helper-root.iml" filepath="$PROJECT_DIR$/java-inno-helper-root.iml" />
     </modules>
   </component>
 </project>
