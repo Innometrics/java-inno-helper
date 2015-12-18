@@ -142,13 +142,12 @@ public class InnoTransformer {
             case EVENT_DATA: {
                 data = session.getEvents().get(0).getData();
                 if (data != null && data.containsKey(valueRef)) {
-                    result = session.getEvents().get(0).getData().get(valueRef);
+                    result = data.get(valueRef);
                 } else throw new ProfileDataException("EventData/" + valueRef);
                 break;
             }
             case SESSION_DATA: {
-                data = session.getEvents().get(0).getData();
-                if (data != null && data.containsKey(valueRef)) {
+                if (session.getData() != null && session.getData().containsKey(valueRef)) {
                     result = session.getData().get(valueRef);
                 } else throw new ProfileDataException("SessionData/" + valueRef);
                 break;

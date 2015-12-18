@@ -7,5 +7,14 @@ import com.google.gson.JsonElement;
  */
 public class PofileStreamMessage {
     Profile profile;
-    JsonElement meta;
+    Object meta;
+
+    public Object getMeta() {
+        return meta;
+    }
+
+    public Profile getProfile() {
+        return profile;
+    }
+
 }
