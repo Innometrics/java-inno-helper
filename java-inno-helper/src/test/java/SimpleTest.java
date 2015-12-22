@@ -4,6 +4,7 @@ import com.innometrics.integrationapp.appsettings.FieldSetsEntry;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.model.*;
+import com.innometrics.integrationapp.utils.ConfigNames;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.mockwebserver.MockResponse;
@@ -19,6 +20,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
+import static com.innometrics.integrationapp.utils.ConfigNames.*;
 
 /**
  * Created by killpack on 18.11.15.
@@ -38,23 +40,23 @@ public class SimpleTest {
 //            }
 //        });
         server.start();
-        config.put(InnoHelperUtils.API_SERVER, HOST);
-        config.put(InnoHelperUtils.API_PORT, String.valueOf(server.getPort()));
-        config.put(InnoHelperUtils.APP_KEY, "89oXs4UmZ325uDuA");
-        config.put(InnoHelperUtils.BUCKET_ID, "bucket1");
-        config.put(InnoHelperUtils.COMPANY_ID, "4");
-        config.put(InnoHelperUtils.APP_ID, "sql-connector");
+        config.put(INNO_API_HOST.name(), HOST);
+        config.put(INNO_API_PORT.name(), String.valueOf(server.getPort()));
+        config.put(INNO_APP_KEY.name(), "89oXs4UmZ325uDuA");
+        config.put(INNO_BUCKET_ID.name(), "bucket1");
+        config.put(INNO_COMPANY_ID.name(), "4");
+        config.put(INNO_APP_ID.name(), "sql-connector");
     }
 
     @Test
     public void testCreateProfile() throws IOException, ExecutionException, InterruptedException {
         InnoHelper innoHelper = new InnoHelper(config);
-        assertEquals(innoHelper.getAppID(),config.get(InnoHelperUtils.APP_ID));
-        assertEquals(innoHelper.getAppKey(),config.get(InnoHelperUtils.APP_KEY));
-        assertEquals(innoHelper.getCompanyId(),config.get(InnoHelperUtils.COMPANY_ID));
-        assertEquals(innoHelper.getBucketId(),config.get(InnoHelperUtils.BUCKET_ID));
-        assertEquals(innoHelper.getHost(),config.get(InnoHelperUtils.API_SERVER));
-        assertEquals(String.valueOf(innoHelper.getPort()),config.get(InnoHelperUtils.API_PORT));
+        assertEquals(innoHelper.getAppID(),config.get(INNO_APP_ID.name()));
+        assertEquals(innoHelper.getAppKey(),config.get(INNO_APP_KEY.name()));
+        assertEquals(innoHelper.getCompanyId(),config.get(INNO_COMPANY_ID.name()));
+        assertEquals(innoHelper.getBucketId(),config.get(INNO_BUCKET_ID.name()));
+        assertEquals(innoHelper.getHost(),config.get(INNO_API_HOST.name()));
+        assertEquals(String.valueOf(innoHelper.getPort()),config.get(INNO_API_PORT.name()));
         Profile profile = new Profile();
         Session session = new Session();
         Event event = new Event();
@@ -113,25 +115,25 @@ public class SimpleTest {
     @Test
     public void testGetManyProfile() throws ExecutionException, InterruptedException, IOException {
         final InnoHelper innoHelper = new InnoHelper(config);
-        for (int i = 0; i < 10; i++) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    Profile profile1 = null;
-                    try {
-                        profile1 = innoHelper.getProfile("322");
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    System.out.println(InnoHelperUtils.getGson().toJson(profile1));
-                }
-            }).start();
-        }
-        Thread.sleep(1000);
+//        for (int i = 0; i < 10; i++) {
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Profile profile1 = null;
+//                    try {
+//                        profile1 = innoHelper.getProfile("322");
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    } catch (ExecutionException e) {
+//                        e.printStackTrace();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                    System.out.println(InnoHelperUtils.getGson().toJson(profile1));
+//                }
+//            }).start();
+//        }
+//        Thread.sleep(1000);
     }
 
     @Test
@@ -320,12 +322,11 @@ public class SimpleTest {
     }
 
     @Test
-    public void testVarildation() throws MalformedURLException, ExecutionException, InterruptedException {
+    public void testValidation() throws MalformedURLException, ExecutionException, InterruptedException {
         Map<String, String> config = new HashMap<>();
-        config.put(InnoHelperUtils.API_SERVER, "http://api.innomdc.com");
-        config.put(InnoHelperUtils.APP_KEY, "89oXs4UmZ325uDuA");
-        config.put(InnoHelperUtils.BUCKET_ID, "bucket1");
-        config.put(InnoHelperUtils.COMPANY_ID, "4");
+        config.put(INNO_API_HOST.name(), "http://api.innomdc.com");
+        config.put(INNO_APP_KEY.name(), "89oXs4UmZ325uDuA");
+        config.put(INNO_BUCKET_ID.name(), "bucket1");
         try {
             InnoHelper innoHelper = new InnoHelper(config);
         } catch (IllegalArgumentException e) {
@@ -333,6 +334,17 @@ public class SimpleTest {
         }
     }
 
+    @Test
+    public void testConfig() throws IOException {
+        Map<String ,String > stringMap= new HashMap<>();
+
+        stringMap.put(INNO_API_HOST.name(), "test1");
+        stringMap.put(INNO_APP_KEY.name(), "2");
+        stringMap.put(INNO_BUCKET_ID.name(), "bucket1");
+        stringMap.put(INNO_APP_ID.name(), "fileupload");
+        Map<String,String> configNamesStringMap = InnoHelperUtils.getConfigFromEnvOrDefault();
+        assertEquals(stringMap,configNamesStringMap);
+    }
     @Test
     public void testDirtyProfile() throws MalformedURLException, ExecutionException, InterruptedException {
         Profile profile = new Profile();

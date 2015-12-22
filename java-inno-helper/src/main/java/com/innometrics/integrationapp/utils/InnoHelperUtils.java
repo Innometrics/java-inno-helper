@@ -5,27 +5,26 @@ import com.google.gson.reflect.TypeToken;
 import com.innometrics.integrationapp.model.*;
 import org.apache.commons.lang3.text.StrBuilder;
 
+import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.net.URI;
+import java.net.URL;
+import java.util.*;
+import java.util.logging.Logger;
 
 
 public class InnoHelperUtils {
-    public static final String COMPANY_ID = "INNO_COMPANY_ID";
-    public static final String BUCKET_ID = "INNO_BUCKET_ID";
-    public static final String APP_ID = "INNO_APP_ID";
-    public static final String APP_KEY = "INNO_APP_KEY";
-    public static final String API_SERVER = "INNO_API_HOST";
-    public static final String API_PORT = "INNO_API_PORT";
-    public static final String CONTENT_TYPE ="Content-Type";
-    public static final String ACCEPT ="Accept";
+
+    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String ACCEPT = "Accept";
     static final Gson gson = initGson();
+    static Logger logger = Logger.getLogger(InnoHelperUtils.class.getName());
     private static final char[] chars = "1234567890abcdefghijklmnopqrstuvwxyz".toCharArray();
     // Added required cache params:
     public static final String CACHE_SIZE = "INNO_CACHE_SIZE";
     public static final String CACHE_TTL = "INNO_CACHE_TTL";
+
     public static Gson getGson() {
         return gson;
     }
@@ -67,6 +66,25 @@ public class InnoHelperUtils {
             newUUID += chars[r.nextInt(35)];
         }
         return newUUID;
+    }
+
+   public static Map<String, String> getConfigFromEnvOrDefault() {
+        Map<String, String> result = new HashMap<>();
+        URL url = InnoHelperUtils.class.getResource("/default.properties");
+        Properties properties = new Properties();
+        try {
+            properties.load(url.openStream());
+        } catch (IOException e) {
+            logger.info("default.properties not found");
+        }
+        for (ConfigNames configName : ConfigNames.values()) {
+            String res = System.getenv(configName.name());
+            String temp = res==null ?properties.getProperty(configName.name()):res;
+            if (temp!=null && !temp.isEmpty()){
+                result.put(configName.name(),temp);
+            }
+        }
+        return result;
     }
 }
 

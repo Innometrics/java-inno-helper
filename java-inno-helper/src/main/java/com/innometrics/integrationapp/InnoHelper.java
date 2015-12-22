@@ -7,6 +7,7 @@ import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.model.App;
 import com.innometrics.integrationapp.model.Profile;
 import com.innometrics.integrationapp.model.Segment;
+import com.innometrics.integrationapp.utils.ConfigNames;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import com.innometrics.integrationapp.utils.RestURI;
 import com.innometrics.integrationapp.utils.SegmentUtil;
@@ -15,7 +16,6 @@ import com.innometrics.iql.IqlSyntaxException;
 import com.squareup.okhttp.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 
 import static com.innometrics.integrationapp.constants.Resources.*;
 import static com.innometrics.integrationapp.utils.InnoHelperUtils.*;
+import static com.innometrics.integrationapp.utils.ConfigNames.*;
 
 public class InnoHelper {
     private static final Logger logger = Logger.getLogger(InnoHelper.class.getCanonicalName());
@@ -55,12 +56,12 @@ public class InnoHelper {
     JsonParser jsonParser = new JsonParser();
 
     public InnoHelper(Map<String, String> config) throws MalformedURLException {
-        host = getOrError(config, API_SERVER);
-        appKey = getOrError(config, APP_KEY);
-        appID = getOrError(config, APP_ID);
-        bucketId = getOrError(config, BUCKET_ID);
-        companyId = getOrError(config, COMPANY_ID);
-        port = Integer.valueOf(config.get(API_PORT) != null ? config.get(API_PORT) : DEFAULT_PORT);
+        host = getOrError(config, INNO_API_HOST.name());
+        appKey = getOrError(config, INNO_APP_KEY.name());
+        appID = getOrError(config, INNO_APP_ID.name());
+        bucketId = getOrError(config, INNO_BUCKET_ID.name());
+        companyId = getOrError(config, INNO_COMPANY_ID.name());
+        port = Integer.valueOf(config.containsKey(INNO_API_PORT.name()) ? config.get(INNO_API_PORT.name()) : DEFAULT_PORT);
         cacheSize = Integer.valueOf(config.get(CACHE_SIZE) != null ? config.get(CACHE_SIZE) : DEFAULT_SIZE);
         cacheTTL = Integer.valueOf(config.get(CACHE_TTL) != null ? config.get(CACHE_TTL) : DEFAULT_TTL);
         if (!host.startsWith("http")) {
