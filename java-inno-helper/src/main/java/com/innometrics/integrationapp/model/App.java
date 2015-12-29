@@ -30,4 +30,25 @@ public class App {
     public void setCustom(Map<String, JsonElement> custom) {
         this.custom = custom;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        App app = (App) o;
+
+        if (id != null ? !id.equals(app.id) : app.id != null) return false;
+        if (custom != null ? !custom.equals(app.custom) : app.custom != null) return false;
+        return settings != null ? settings.equals(app.settings) : app.settings == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (custom != null ? custom.hashCode() : 0);
+        result = 31 * result + (settings != null ? settings.hashCode() : 0);
+        return result;
+    }
 }

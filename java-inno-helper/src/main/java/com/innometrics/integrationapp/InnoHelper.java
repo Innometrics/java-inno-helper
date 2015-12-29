@@ -7,7 +7,6 @@ import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.model.App;
 import com.innometrics.integrationapp.model.Profile;
 import com.innometrics.integrationapp.model.Segment;
-import com.innometrics.integrationapp.utils.ConfigNames;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import com.innometrics.integrationapp.utils.RestURI;
 import com.innometrics.integrationapp.utils.SegmentUtil;
@@ -21,6 +20,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -36,7 +36,7 @@ public class InnoHelper {
     private final URL hostWithVersion;
     private OkHttpClient httpClient = new OkHttpClient();
     private final ConcurrentMap<String, String> parameters = new ConcurrentHashMap<String, String>();
-
+    Set <AppConfigChangeListener> changeListeners = new HashSet<>();
     public static final String DEFAULT_PORT = "80";
     public static final String DEFAULT_TTL = "300";
     public static final String DEFAULT_SIZE = "1000";
@@ -81,10 +81,20 @@ public class InnoHelper {
 
     public App getApp() throws IOException, ExecutionException, InterruptedException {
         if (lastGetConfigTime + getConfigTimeOut < System.currentTimeMillis()) {
-            app = getObjectSync(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(apps, appID), App.class);
+            App tempApp = getObjectSync(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(apps, appID), App.class);
+            if (!tempApp.equals(app)){
+                app = tempApp;
+                for (AppConfigChangeListener changeListener : changeListeners) {
+                    changeListener.change(app);
+                }
+            }
             lastGetConfigTime = System.currentTimeMillis();
         }
         return app;
+    }
+
+    public void addChengeListeners(AppConfigChangeListener changeListener) {
+        this.changeListeners.add(changeListener);
     }
 
     <T> T processResponse(Response response, Class<T> aClass) throws IOException {

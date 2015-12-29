@@ -21,7 +21,6 @@ public class ThrottlingInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         requestLock.lock();
         try {
-            System.out.println(Thread.currentThread().getName());
             long curTime = System.currentTimeMillis();
             long diff = curTime - lastRequest;
             if (diff < maxRequestSpeed)
