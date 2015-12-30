@@ -56,8 +56,39 @@ public class TestMapping {
         session.setId("sessionID");
         session.addEvent(event);
         profile.addSession(session);
+
         Map<String, Object> stringObjectMap = innoTransformer.fromProfile(profile);
         Assert.assertEquals("TestValue", stringObjectMap.get("test"));
+    }
+
+    @Test
+    public void testTransformFromProfileMultiThread() throws ExecutionException, InterruptedException, IOException, ProfileDataException {
+        final InnoTransformer innoTransformer = getTransformer("/testField.json");
+        final Profile profile = new Profile();
+        profile.setId("test");
+        Session session = new Session();
+        session.setCollectApp("testCollectApp");
+        session.setSection("testSection");
+        Event event = new Event();
+        event.putData("testKey", "TestValue");
+        event.setDefinitionId("EventDefinitionId");
+        session.setId("sessionID");
+        session.addEvent(event);
+        profile.addSession(session);
+        for (int i = 0; i < 1000; i++) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Map<String, Object> stringObjectMap = innoTransformer.fromProfile(profile);
+                        Assert.assertEquals("TestValue", stringObjectMap.get("test"));
+                    } catch (ProfileDataException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+        }
+        Thread.sleep(1000);
     }
 
     @Test

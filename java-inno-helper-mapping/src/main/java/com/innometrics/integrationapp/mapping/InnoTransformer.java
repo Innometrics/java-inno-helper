@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -23,7 +24,7 @@ import java.util.concurrent.ExecutionException;
 public class InnoTransformer {
     public static final String RULES = "rules";
     public static final String MAPPING_SET_NAME = "mapping";
-    Map<String, RulesEntry> rulesEntries = new HashMap<>();
+    Map<String, RulesEntry> rulesEntries = new ConcurrentHashMap<>();
     InnoHelper innoHelper ;
     public InnoTransformer(InnoHelper  innoHelper) throws ExecutionException, InterruptedException, IOException {
         this.innoHelper = innoHelper;
