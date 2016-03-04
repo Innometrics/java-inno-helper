@@ -43,7 +43,7 @@ public class InnoHelper {
     private static volatile long REQ_DELAY = 200;
     private volatile long lastGetConfigTime;
     private long getConfigTimeOut = 10_000;
-    App app;
+    volatile App app;
     String companyId;
     String bucketId;
     String host;
@@ -79,7 +79,7 @@ public class InnoHelper {
     }
 
 
-    public App getApp() throws IOException, ExecutionException, InterruptedException {
+    public synchronized App getApp() throws IOException, ExecutionException, InterruptedException {
         if (lastGetConfigTime + getConfigTimeOut < System.currentTimeMillis()) {
             App tempApp = getObjectSync(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(apps, appID), App.class);
             if (!tempApp.equals(app)){

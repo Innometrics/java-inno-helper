@@ -1,6 +1,8 @@
 package com.innometrics.integrationapp.mapping;
 
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import com.innometrics.integrationapp.InnoHelper;
 import com.innometrics.integrationapp.appsettings.FieldSetsEntry;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
@@ -25,10 +27,11 @@ public class InnoTransformer {
     public static final String RULES = "rules";
     public static final String MAPPING_SET_NAME = "mapping";
     Map<String, RulesEntry> rulesEntries = new ConcurrentHashMap<>();
-    InnoHelper innoHelper ;
-    public InnoTransformer(InnoHelper  innoHelper) throws ExecutionException, InterruptedException, IOException {
+    InnoHelper innoHelper;
+
+    public InnoTransformer(InnoHelper innoHelper) throws ExecutionException, InterruptedException, IOException {
         this.innoHelper = innoHelper;
-        RulesEntry [] rulesEntries = innoHelper.getCustom(RULES,RulesEntry[].class);
+        RulesEntry[] rulesEntries = innoHelper.getCustom(RULES, RulesEntry[].class);
         for (RulesEntry rulesEntry : rulesEntries) {
             this.rulesEntries.put(rulesEntry.getEvent(), rulesEntry);
         }
@@ -56,54 +59,55 @@ public class InnoTransformer {
     public Profile toProfile(Map<String, Object> map, String entryName) {
         RulesEntry rulesEntry = null;
         for (RulesEntry entry : rulesEntries.values()) {
-            if (entry.getName().equals(entryName)){
+            if (entry.getName().equals(entryName)) {
                 rulesEntry = entry;
             }
         }
         for (FieldSetsEntry setsEntry : rulesEntry.getFieldSets()) {
-            if(MAPPING_SET_NAME.equals(setsEntry.getSetName())){
+            if (MAPPING_SET_NAME.equals(setsEntry.getSetName())) {
                 Profile profile = new Profile();
-                Session session= new Session();
+                Session session = new Session();
                 Event event = new Event();
                 for (FieldsEntry fieldsEntry : setsEntry.getFields()) {
                     String type = fieldsEntry.getType();
                     DataLevel dataLevel = DataLevel.valueOf(type.toUpperCase());
-                    if (dataLevel!=null){
-                        switch (dataLevel){
-                            case PROFILE_ID:{
+                    if (dataLevel != null) {
+                        switch (dataLevel) {
+                            case PROFILE_ID: {
                                 profile.setId((String) convertValue(map.get(fieldsEntry.getFieldName()), fieldsEntry));
                                 break;
                             }
-                            case ATTRIBUTE_DATA:{
-                                String[] valueRef= validateValueRef(fieldsEntry.getValueRef());
-                                profile.setAttribute(valueRef[0], valueRef[1], valueRef[2], convertValue(map.get(fieldsEntry.getFieldName()), fieldsEntry));
+                            case ATTRIBUTE_DATA: {
+                                String[] valueRef = validateValueRef(fieldsEntry.getValueRef());
+                                profile.setAttribute(valueRef[0], valueRef[1], valueRef[2], InnoHelperUtils.getGson().toJsonTree(convertValue(map.get(fieldsEntry.getFieldName()), fieldsEntry)));
                                 break;
                             }
-                            case EVENT_DATA:{
-                                String[] valueRef= validateValueRef(fieldsEntry.getValueRef());
-                                event.putData(valueRef[0],convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
+                            case EVENT_DATA: {
+                                String[] valueRef = validateValueRef(fieldsEntry.getValueRef());
+                                event.putData(valueRef[0], InnoHelperUtils.getGson().toJsonTree(convertValue(map.get(fieldsEntry.getFieldName()), fieldsEntry)));
                                 break;
                             }
-                            case EVENT_DEFINITION:{
-                                event.setDefinitionId((String) convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
+                            case EVENT_DEFINITION: {
+                                event.setDefinitionId((String) convertValue(map.get(fieldsEntry.getFieldName()), fieldsEntry));
                                 break;
                             }
-                            case SESSION_DATA:{
-                                String[] valueRef= validateValueRef(fieldsEntry.getValueRef());
+                            case SESSION_DATA: {
+                                String[] valueRef = validateValueRef(fieldsEntry.getValueRef());
                                 session.setCollectApp(valueRef[0]);
                                 session.setSection(valueRef[1]);
-                                session.putData(valueRef[2],convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
+                                session.putData(valueRef[2], InnoHelperUtils.getGson().toJsonTree(convertValue(map.get(fieldsEntry.getFieldName()), fieldsEntry)));
                                 break;
                             }
-                            case SESSION_CREATED:{
-                                session.setCreatedAt((Date) convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
+                            case SESSION_CREATED: {
+                                session.setCreatedAt((Date) map.get(fieldsEntry.getFieldName()));
                                 break;
                             }
-                            case EVENT_CREATED:{
-                                event.setCreatedAt((Date) convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
+                            case EVENT_CREATED: {
+                                event.setCreatedAt((Date) map.get(fieldsEntry.getFieldName()));
                                 break;
-                            }case PROFILE_CREATED:{
-                                profile.setCreatedAt((Date) convertValue(map.get(fieldsEntry.getFieldName()),fieldsEntry));
+                            }
+                            case PROFILE_CREATED: {
+                                profile.setCreatedAt((Date) map.get(fieldsEntry.getFieldName()));
                                 break;
                             }
                         }
@@ -119,12 +123,12 @@ public class InnoTransformer {
     }
 
     private String[] validateValueRef(String valueRef) {
-        if (valueRef==null ||valueRef.isEmpty()){
+        if (valueRef == null || valueRef.isEmpty()) {
             // todo
             throw new IllegalArgumentException("");
         }
         String[] res = valueRef.split("/");
-        if (!(res.length==3 || res.length==1 )){
+        if (!(res.length == 3 || res.length == 1)) {
             throw new IllegalArgumentException("");
         }
         return res;
@@ -138,7 +142,7 @@ public class InnoTransformer {
         DataLevel type = DataLevel.valueOf(stringType.toUpperCase());
         Session session = profile.getSessions().get(0);
         String valueRef = fieldsEntry.getValueRef();
-        Map<String, Object> data;
+        Map<String, JsonElement> data;
         switch (type) {
             case EVENT_DATA: {
                 data = session.getEvents().get(0).getData();
@@ -194,9 +198,8 @@ public class InnoTransformer {
         return convertValue(result, fieldsEntry);
     }
 
-    protected static Object convertValue(Object value, FieldsEntry fieldsEntry) {
+    protected Object convertValue(Object value, FieldsEntry fieldsEntry) {
         if (value == null || value.equals("null")) return null;
-        String tmp = String.valueOf(value);
         DataType type = DataType.STRING;
         Map<String, Object> settings = null;
         if (fieldsEntry != null && fieldsEntry.getFieldSettings() != null) {
@@ -207,9 +210,17 @@ public class InnoTransformer {
 //                logger.debug(e.getMessage());
             }
         }
+        if (value instanceof JsonElement  && type.equals(DataType.JSON)) {
+           return value;
+
+        }
+        String tmp = value instanceof JsonPrimitive ? ((JsonPrimitive) value).getAsString() : String.valueOf(value);
         switch (type) {
             case DOUBLE: {
                 return Double.valueOf(tmp);
+            }
+            case JSON: {
+                return value;
             }
             case INTEGER: {
                 return Integer.valueOf(tmp);
@@ -231,7 +242,7 @@ public class InnoTransformer {
                 return Long.valueOf(tmp);
             }
             case STRING: {
-                return value;
+                return tmp;
             }
             case DATE: {
                 if (settings.isEmpty()) return null;

@@ -1,5 +1,7 @@
 package com.innometrics.integrationapp.model;
 
+import com.google.gson.JsonElement;
+
 import java.util.*;
 
 
@@ -78,7 +80,7 @@ public class Profile extends Dirty {
         this.attributes = attributes;
         setDirty(true);
     }
-    public void setAttribute( String collectApp,String section , String name , Object value) {
+    public void setAttribute( String collectApp,String section , String name , JsonElement value) {
         if(attributes == null) {
             attributes = new ArrayList<Attribute>();
         }

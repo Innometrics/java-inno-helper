@@ -1,5 +1,6 @@
 package com.innometrics.integrationapp.model;
 
+import com.google.gson.JsonElement;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 
 import java.util.Collections;
@@ -12,7 +13,7 @@ public class Event extends Dirty {
     private String id = InnoHelperUtils.getRandomID(8);
     private Date createdAt;
     private String definitionId;
-    private Map<String, Object> data = new HashMap<>();
+    private Map<String, JsonElement> data = new HashMap<>();
     private transient Session session;
 
     public String getId() {
@@ -42,16 +43,16 @@ public class Event extends Dirty {
         this.definitionId = definitionId;
     }
 
-    public Map<String, Object> getData() {
+    public Map<String, JsonElement> getData() {
         return Collections.unmodifiableMap(data);
     }
 
-    public void putData(String key, Object value) {
+    public void putData(String key, JsonElement value) {
         setDirty(true);
         data.put(key, value);
     }
 
-    public void setData(Map<String, Object> data) {
+    public void setData(Map<String, JsonElement> data) {
         setDirty(true);
         this.data = data;
     }

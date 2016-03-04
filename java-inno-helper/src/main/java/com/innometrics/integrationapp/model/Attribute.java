@@ -1,6 +1,8 @@
 package com.innometrics.integrationapp.model;
 
 
+import com.google.gson.JsonElement;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +11,7 @@ public class Attribute extends Dirty {
 
     private String collectApp;
     private String section;
-    private Map<String, Object> data = new HashMap<String, Object>();
+    private Map<String, JsonElement> data = new HashMap<String, JsonElement>();
 
     public Attribute() {
     }
@@ -21,7 +23,6 @@ public class Attribute extends Dirty {
 
     public String getCollectApp() {
         return collectApp;
-
     }
 
     public void setCollectApp(String collectApp) {
@@ -38,16 +39,16 @@ public class Attribute extends Dirty {
         this.section = section;
     }
 
-    public Map<String, Object> getData() {
+    public Map<String, JsonElement> getData() {
         return Collections.unmodifiableMap(data);
     }
 
-    public void setData(Map<String, Object> data) {
+    public void setData(Map<String, JsonElement> data) {
         setDirty(true);
         this.data = data;
     }
 
-    public void putData(String key, Object value) {
+    public void putData(String key, JsonElement value) {
         setDirty(true);
         data.put(key, value);
     }

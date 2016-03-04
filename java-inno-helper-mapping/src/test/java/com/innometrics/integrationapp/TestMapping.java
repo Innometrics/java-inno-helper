@@ -1,6 +1,8 @@
 package com.innometrics.integrationapp;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.mapping.DataLevel;
@@ -51,7 +53,7 @@ public class TestMapping {
         session.setCollectApp("testCollectApp");
         session.setSection("testSection");
         Event event = new Event();
-        event.putData("testKey", "TestValue");
+        event.putData("testKey", new JsonPrimitive("TestValue"));
         event.setDefinitionId("EventDefinitionId");
         session.setId("sessionID");
         session.addEvent(event);
@@ -70,7 +72,7 @@ public class TestMapping {
         session.setCollectApp("testCollectApp");
         session.setSection("testSection");
         Event event = new Event();
-        event.putData("testKey", "TestValue");
+        event.putData("testKey", new JsonPrimitive("TestValue"));
         event.setDefinitionId("EventDefinitionId");
         session.setId("sessionID");
         session.addEvent(event);
@@ -97,7 +99,7 @@ public class TestMapping {
         Map<String, Object> data = new HashMap<>();
         data.put("test", "testValue"); // (f.e. csv header and  cell)
         Profile result = innoTransformer.toProfile(data, "test1");
-        Assert.assertEquals("testValue", result.getSessions().get(0).getEvents().get(0).getData().get("test"));
+        Assert.assertEquals(new JsonPrimitive("testValue"), result.getSessions().get(0).getEvents().get(0).getData().get("test"));
     }
 
     @Test
@@ -106,9 +108,9 @@ public class TestMapping {
         String url = RandomStringUtils.random(10);
         String profileId = RandomStringUtils.randomNumeric(10);
         Date createdAt = new Date();
-        Map<String, Object> data = new HashMap<>();
-        data.put("url", url);
-        data.put("time", time);
+        Map<String, JsonElement> data = new HashMap<>();
+        data.put("url", new JsonPrimitive(url));
+        data.put("time", new JsonPrimitive(time));
 
         Profile profile = new Profile(profileId);
         profile.setCreatedAt(createdAt);
@@ -149,7 +151,7 @@ public class TestMapping {
         fieldsEntry.setFieldName("url");
         fieldsEntry.setValueRef("url");
         Assert.assertNotNull(transformer.getValue(profile, fieldsEntry));
-        Assert.assertEquals(url, transformer.getValue(profile, fieldsEntry));
+        Assert.assertEquals(new JsonPrimitive(url).getAsString(), transformer.getValue(profile, fieldsEntry));
 
         fieldsEntry.setType(DataLevel.SESSION_DATA.name());
         Assert.assertEquals(url, transformer.getValue(profile, fieldsEntry));
@@ -185,7 +187,6 @@ public class TestMapping {
         stringObjectMap.put("profCreated",createdAtProfile);
         stringObjectMap.put("sesCreated",createdAtSession);
         stringObjectMap.put("profId",id);
-        Map<String, Object> data = new HashMap<>();
 
         InnoTransformer transformer = getTransformer("/testDataLevelToProfile.json");
         Profile profile = transformer.toProfile(stringObjectMap,"test1");
@@ -193,9 +194,9 @@ public class TestMapping {
         Assert.assertEquals(createdAtProfile,profile.getCreatedAt());
         Assert.assertEquals(createdAtSession,profile.getSessions().get(0).getCreatedAt());
         Assert.assertEquals(createdAtEvent,profile.getSessions().get(0).getEvents().get(0).getCreatedAt());
-        Assert.assertEquals(url,profile.getSessions().get(0).getEvents().get(0).getData().get("event url"));
-        Assert.assertEquals(url, profile.getSessions().get(0).getData().get("session url"));
-        Assert.assertEquals(url, profile.getAttributes().get(0).getData().get("attribute url"));
+        Assert.assertEquals(new JsonPrimitive(url),profile.getSessions().get(0).getEvents().get(0).getData().get("event url"));
+        Assert.assertEquals(new JsonPrimitive(url), profile.getSessions().get(0).getData().get("session url"));
+        Assert.assertEquals(new JsonPrimitive(url), profile.getAttributes().get(0).getData().get("attribute url"));
     }
 
     @Test
@@ -203,8 +204,8 @@ public class TestMapping {
         String time ="2015-01-01 11:11:11";
         Profile profile = new Profile();
         Event event = new Event();
-        Map<String, Object> data = new HashMap<>();
-        data.put("time", time);
+        Map<String, JsonElement> data = new HashMap<>();
+        data.put("time", new JsonPrimitive(time));
         event.setData(data);
         Session session = new Session();
         session.setSection("section");

@@ -1,4 +1,6 @@
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import com.innometrics.integrationapp.InnoHelper;
 import com.innometrics.integrationapp.appsettings.FieldSetsEntry;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
@@ -60,8 +62,8 @@ public class SimpleTest {
         Profile profile = new Profile();
         Session session = new Session();
         Event event = new Event();
-        Map<String, Object> data = new HashMap<>();
-        data.put("asdad", 13);
+        Map<String, JsonElement> data = new HashMap<>();
+        data.put("asdad", new JsonPrimitive(13));
         session.setId("section");
         event.setId("123123123123");
         event.setDefinitionId("");
@@ -232,15 +234,15 @@ public class SimpleTest {
         Date date =new Date();
         String string = "asd";
         profile.setId(string);
-        Map<String,Object> map = new HashMap<>();
-        map.put("key",1);
+        Map<String,JsonElement> map = new HashMap<>();
+        map.put("key",new JsonPrimitive(1));
 //
         Event event = new Event();
         event.setId(string);
         event.setCreatedAt(date);
         event.setDefinitionId(string);
         event.setData(map);
-        event.putData("Key3", 3);
+        event.putData("Key3", new JsonPrimitive(3));
         assertEquals(event.getId(), string);
         assertEquals(event.getCreatedAt(), date);
         assertEquals(event.getDefinitionId(),string);
@@ -253,7 +255,7 @@ public class SimpleTest {
         session.setData(map);
         session.addEvent(event);
         session.setEvents(Collections.singletonList(event));
-        session.putData("key4", 4);
+        session.putData("key4", new JsonPrimitive(4));
         assertEquals(session.getCollectApp(), string);
         assertEquals(session.getCreatedAt(), date);
         assertEquals(session.getSection(), string);
@@ -264,14 +266,14 @@ public class SimpleTest {
         attribute.setSection(string);
         attribute.setCollectApp(string);
         attribute.setData(map);
-        attribute.putData("Key2", 2);
+        attribute.putData("Key2", new JsonPrimitive(2));
         assertEquals(attribute.getCollectApp(), string);
         assertEquals(attribute.getSection(),string);
         assertEquals(attribute.getData(),map);
 
         profile.setCreatedAt(date);
         profile.addAttribute(attribute);
-        profile.setAttribute(string, string, string, string);
+        profile.setAttribute(string, string, string, new JsonPrimitive(string));
         profile.setAttributes(Collections.singletonList(attribute));
         profile.addSession(session);
         profile.setSessions(Collections.singletonList(session));
@@ -362,7 +364,7 @@ public class SimpleTest {
 //        session.addEvent(event2);
 //        session.setDirty(true);
         assertNotEquals(InnoHelperUtils.getGson().toJson(profile), new Gson().toJson(profile));
-        event.putData("adadasdas", 121233);
+        event.putData("adadasdas", new JsonPrimitive(121233));
         assertEquals(InnoHelperUtils.getGson().toJson(profile), new Gson().toJson(profile));
     }
 

@@ -18,7 +18,8 @@
             "value": "eventDefinition"
           } ,{
             "fieldName": "profCreated",
-            "type": "profile_created"
+            "type": "profile_created",
+            "convertType" : "DATE"
           },{
             "fieldName": "evCreated",
             "type": "event_created"

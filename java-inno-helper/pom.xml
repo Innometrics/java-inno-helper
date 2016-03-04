@@ -65,8 +65,6 @@
                         <INNO_APP_KEY>2</INNO_APP_KEY>
                         <INNO_API_HOST>test1</INNO_API_HOST>
                     </environmentVariables>
-                    <systemProperties>
-                    </systemProperties>
                 </configuration>
             </plugin>
             <plugin>
