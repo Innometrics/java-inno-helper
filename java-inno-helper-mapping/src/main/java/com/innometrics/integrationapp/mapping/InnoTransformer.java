@@ -7,10 +7,7 @@ import com.innometrics.integrationapp.InnoHelper;
 import com.innometrics.integrationapp.appsettings.FieldSetsEntry;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
-import com.innometrics.integrationapp.model.Attribute;
-import com.innometrics.integrationapp.model.Event;
-import com.innometrics.integrationapp.model.Profile;
-import com.innometrics.integrationapp.model.Session;
+import com.innometrics.integrationapp.model.*;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 
 import java.io.IOException;
@@ -26,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 public class InnoTransformer {
     public static final String RULES = "rules";
     public static final String MAPPING_SET_NAME = "mapping";
+    public static final String USER_AGENT = "User-Agent";
     Map<String, RulesEntry> rulesEntries = new ConcurrentHashMap<>();
     InnoHelper innoHelper;
 
@@ -37,7 +35,8 @@ public class InnoTransformer {
         }
     }
 
-    public Map<String, Object> fromProfile(Profile profile) throws ProfileDataException {
+    public Map<String, Object> fromProfileStream(ProfileStreamMessage profileStreamMessage) throws ProfileDataException {
+        Profile profile = profileStreamMessage.getProfile();
         Map<String, Object> result = new HashMap<>();
         RulesEntry rulesEntry = rulesEntries.get(InnoHelperUtils.getFullFirstEventName(profile));
         if (rulesEntry == null) {
@@ -48,7 +47,7 @@ public class InnoTransformer {
             if (outGoingFieldName.equals(MAPPING_SET_NAME)) {
                 for (FieldsEntry field : fieldSet.getFields()) {
                     if (field != null && field.getType() != null) {
-                        result.put(field.getFieldName(), getValue(profile, field));
+                        result.put(field.getFieldName(), getValue(profileStreamMessage, field));
                     }
                 }
             }
@@ -135,7 +134,8 @@ public class InnoTransformer {
     }
 
 
-    public Object getValue(Profile profile, FieldsEntry fieldsEntry) throws ProfileDataException {
+    public Object getValue(ProfileStreamMessage profileStreamMessage, FieldsEntry fieldsEntry) throws ProfileDataException {
+        Profile profile = profileStreamMessage.getProfile();
         Object result = null;
         String stringType = fieldsEntry.getType();
         if (stringType == null || stringType.isEmpty()) return null;
@@ -182,20 +182,69 @@ public class InnoTransformer {
                 result = session.getCreatedAt().toString();
                 break;
             }
+            case SESSION_ID: {
+                result = session.getId();
+                break;
+            }
             case EVENT_CREATED: {
                 result = session.getEvents().get(0).getCreatedAt().toString();
+                break;
+            }
+            case EVENT_ID: {
+                result = session.getEvents().get(0).getId();
                 break;
             }
             case EVENT_DEFINITION: {
                 result = session.getEvents().get(0).getDefinitionId();
                 break;
             }
-            case MACROS: {
-//                result = fieldsEntry.a();// todo implementMacros
+            case MACRO: {
+                result = getMacro(profileStreamMessage, fieldsEntry.getValueRef());
+                break;
+            }
+            case META: {
+                result = getMeta(profile, fieldsEntry.getValueRef());
                 break;
             }
         }
         return convertValue(result, fieldsEntry);
+    }
+
+    private Object getMacro(ProfileStreamMessage profileStreamMessage, String valueRef) {
+        Macro macro = Macro.valueOf(valueRef.toUpperCase());
+        switch (macro) {
+            case CURRENT_TIMESTAMP: {
+                return System.currentTimeMillis();
+            }
+            case REQUEST_IP: {
+                if (profileStreamMessage.getMeta() != null)
+                    return profileStreamMessage.getMeta().getRequestMeta().getRequestIp();
+            }
+            case USER_AGENT: {
+                if (profileStreamMessage.getMeta() != null)
+                    return profileStreamMessage.getMeta().getRequestMeta().getHeaders().get(USER_AGENT);
+            }
+        }
+        return null;
+    }
+
+    private Object getMeta(Profile profile, String valueRef) {
+        MetaConstant metaConstant = MetaConstant.valueOf(valueRef.toUpperCase());
+        switch (metaConstant) {
+            case BUCKET_ID: {
+                return innoHelper.getBucketId();
+            }
+            case COMPANY_ID: {
+                return innoHelper.getCompanyId();
+            }
+            case COLLECTAPP: {
+                return profile.getSessions().get(0).getCollectApp();
+            }
+            case SECTION: {
+                return profile.getSessions().get(0).getSection();
+            }
+        }
+        return null;
     }
 
     protected Object convertValue(Object value, FieldsEntry fieldsEntry) {
@@ -210,8 +259,8 @@ public class InnoTransformer {
 //                logger.debug(e.getMessage());
             }
         }
-        if (value instanceof JsonElement  && type.equals(DataType.JSON)) {
-           return value;
+        if (value instanceof JsonElement && type.equals(DataType.JSON)) {
+            return value;
 
         }
         String tmp = value instanceof JsonPrimitive ? ((JsonPrimitive) value).getAsString() : String.valueOf(value);
@@ -261,4 +310,6 @@ public class InnoTransformer {
         }
         return value;
     }
+
+
 }

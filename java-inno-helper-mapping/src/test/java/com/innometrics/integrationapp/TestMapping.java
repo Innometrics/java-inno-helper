@@ -8,10 +8,9 @@ import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.mapping.DataLevel;
 import com.innometrics.integrationapp.mapping.InnoTransformer;
 import com.innometrics.integrationapp.mapping.ProfileDataException;
-import com.innometrics.integrationapp.model.Attribute;
-import com.innometrics.integrationapp.model.Event;
-import com.innometrics.integrationapp.model.Profile;
-import com.innometrics.integrationapp.model.Session;
+import com.innometrics.integrationapp.model.*;
+import com.innometrics.integrationapp.utils.InnoHelperUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -59,7 +58,7 @@ public class TestMapping {
         session.addEvent(event);
         profile.addSession(session);
 
-        Map<String, Object> stringObjectMap = innoTransformer.fromProfile(profile);
+        Map<String, Object> stringObjectMap = innoTransformer.fromProfileStream(new ProfileStreamMessage(profile));
         Assert.assertEquals("TestValue", stringObjectMap.get("test"));
     }
 
@@ -82,7 +81,7 @@ public class TestMapping {
                 @Override
                 public void run() {
                     try {
-                        Map<String, Object> stringObjectMap = innoTransformer.fromProfile(profile);
+                        Map<String, Object> stringObjectMap = innoTransformer.fromProfileStream(new ProfileStreamMessage(profile));
                         Assert.assertEquals("TestValue", stringObjectMap.get("test"));
                     } catch (ProfileDataException e) {
                         e.printStackTrace();
@@ -130,31 +129,30 @@ public class TestMapping {
         FieldsEntry fieldsEntry = new FieldsEntry();
         //profile id test
         fieldsEntry.setType(DataLevel.PROFILE_ID.name());
-        Assert.assertEquals(profileId, transformer.getValue(profile, fieldsEntry));
+        Assert.assertEquals(profileId, transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
         //profileCreated test
         fieldsEntry.setType(DataLevel.PROFILE_CREATED.name());
-        Assert.assertEquals(createdAt.toString(), transformer.getValue(profile, fieldsEntry));
+        Assert.assertEquals(createdAt.toString(), transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
         //SESSION_CREATED test
         fieldsEntry.setType(DataLevel.SESSION_CREATED.name());
-        Assert.assertEquals(createdAt.toString(), transformer.getValue(profile, fieldsEntry));
+        Assert.assertEquals(createdAt.toString(), transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
 
-         //EVENT_CREATED  Created test
+        //EVENT_CREATED  Created test
         fieldsEntry.setType(DataLevel.EVENT_CREATED.name());
-        Assert.assertEquals(createdAt.toString(), transformer.getValue(profile, fieldsEntry));
+        Assert.assertEquals(createdAt.toString(), transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
         //EVENT_DEFINITION  Created test
         fieldsEntry.setType(DataLevel.EVENT_DEFINITION.name());
-        Assert.assertEquals("eventDefinition", transformer.getValue(profile, fieldsEntry));
-
+        Assert.assertEquals("eventDefinition", transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
 
 
         fieldsEntry.setType(DataLevel.EVENT_DATA.name());
         fieldsEntry.setFieldName("url");
         fieldsEntry.setValueRef("url");
-        Assert.assertNotNull(transformer.getValue(profile, fieldsEntry));
-        Assert.assertEquals(new JsonPrimitive(url).getAsString(), transformer.getValue(profile, fieldsEntry));
+        Assert.assertNotNull(transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
+        Assert.assertEquals(new JsonPrimitive(url).getAsString(), transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
 
         fieldsEntry.setType(DataLevel.SESSION_DATA.name());
-        Assert.assertEquals(url, transformer.getValue(profile, fieldsEntry));
+        Assert.assertEquals(url, transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
 
         fieldsEntry.setType(DataLevel.ATTRIBUTE_DATA.name());
         Attribute attribute = new Attribute();
@@ -163,12 +161,12 @@ public class TestMapping {
         attribute.setSection("section");
         profile.setAttributes(Collections.singletonList(attribute));
         fieldsEntry.setValueRef("collectApp/section/url");
-        Assert.assertEquals(url, transformer.getValue(profile, fieldsEntry));
+        Assert.assertEquals(url, transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
 
         //Todo move static and  add macros
         fieldsEntry.setType(DataLevel.STATIC.name());
         fieldsEntry.setValueRef(url);
-        Assert.assertEquals(url, transformer.getValue(profile, fieldsEntry));
+        Assert.assertEquals(url, transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
     }
 
     @Test
@@ -176,32 +174,32 @@ public class TestMapping {
         String time = RandomStringUtils.randomAlphanumeric(12);
         String url = RandomStringUtils.randomNumeric(10);
         String id = RandomStringUtils.randomNumeric(10);
-        Map<String,Object> stringObjectMap = new HashMap<>();
+        Map<String, Object> stringObjectMap = new HashMap<>();
         Date createdAtEvent = new Date(123123);
         Date createdAtProfile = new Date();
         Date createdAtSession = new Date();
         stringObjectMap.put("url", url);
         stringObjectMap.put("time", time);
-        stringObjectMap.put("evD","eventDefinition");
-        stringObjectMap.put("evCreated",createdAtEvent);
-        stringObjectMap.put("profCreated",createdAtProfile);
-        stringObjectMap.put("sesCreated",createdAtSession);
-        stringObjectMap.put("profId",id);
+        stringObjectMap.put("evD", "eventDefinition");
+        stringObjectMap.put("evCreated", createdAtEvent);
+        stringObjectMap.put("profCreated", createdAtProfile);
+        stringObjectMap.put("sesCreated", createdAtSession);
+        stringObjectMap.put("profId", id);
 
         InnoTransformer transformer = getTransformer("/testDataLevelToProfile.json");
-        Profile profile = transformer.toProfile(stringObjectMap,"test1");
-        Assert.assertEquals(id,profile.getId());
-        Assert.assertEquals(createdAtProfile,profile.getCreatedAt());
-        Assert.assertEquals(createdAtSession,profile.getSessions().get(0).getCreatedAt());
-        Assert.assertEquals(createdAtEvent,profile.getSessions().get(0).getEvents().get(0).getCreatedAt());
-        Assert.assertEquals(new JsonPrimitive(url),profile.getSessions().get(0).getEvents().get(0).getData().get("event url"));
+        Profile profile = transformer.toProfile(stringObjectMap, "test1");
+        Assert.assertEquals(id, profile.getId());
+        Assert.assertEquals(createdAtProfile, profile.getCreatedAt());
+        Assert.assertEquals(createdAtSession, profile.getSessions().get(0).getCreatedAt());
+        Assert.assertEquals(createdAtEvent, profile.getSessions().get(0).getEvents().get(0).getCreatedAt());
+        Assert.assertEquals(new JsonPrimitive(url), profile.getSessions().get(0).getEvents().get(0).getData().get("event url"));
         Assert.assertEquals(new JsonPrimitive(url), profile.getSessions().get(0).getData().get("session url"));
         Assert.assertEquals(new JsonPrimitive(url), profile.getAttributes().get(0).getData().get("attribute url"));
     }
 
     @Test
     public void testDateConvert() throws ProfileDataException, ParseException, InterruptedException, ExecutionException, IOException {
-        String time ="2015-01-01 11:11:11";
+        String time = "2015-01-01 11:11:11";
         Profile profile = new Profile();
         Event event = new Event();
         Map<String, JsonElement> data = new HashMap<>();
@@ -212,18 +210,31 @@ public class TestMapping {
         session.setCollectApp("collectApp");
         session.addEvent(event);
         profile.addSession(session);
-        FieldsEntry fieldsEntry =new FieldsEntry();
+        FieldsEntry fieldsEntry = new FieldsEntry();
         fieldsEntry.setType(DataLevel.EVENT_DATA.name());
         fieldsEntry.setFieldName("url");
         Map<String, Object> fieldSettings = new HashMap<>();
-        fieldSettings.put("convertType","Date");
+        fieldSettings.put("convertType", "Date");
         String timeFormat = "yyyy-MM-dd HH:mm:ss";
-        fieldSettings.put("timeFormat",timeFormat);
+        fieldSettings.put("timeFormat", timeFormat);
         fieldsEntry.setFieldSettings(fieldSettings);
         fieldsEntry.setValueRef("time");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(timeFormat);
-        InnoTransformer transformer= getTransformer("/testFieldToProfile.json");
-        Assert.assertNotNull(transformer.getValue(profile, fieldsEntry));
-        Assert.assertEquals(simpleDateFormat.parse(time), transformer.getValue(profile, fieldsEntry));
+        InnoTransformer transformer = getTransformer("/testFieldToProfile.json");
+        Assert.assertNotNull(transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
+        Assert.assertEquals(simpleDateFormat.parse(time), transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
+    }
+
+    @Test
+    public void testMetaAndMacro() throws InterruptedException, ExecutionException, IOException, ProfileDataException {
+        InnoTransformer innoTransformer = getTransformer("/testField.json");
+        ProfileStreamMessage startProfile = InnoHelperUtils.getGson().fromJson(new FileReader(new File(getClass().getResource("/profileStreamMessage.json").getPath())), ProfileStreamMessage.class);
+        Map<String, Object> stringObjectMap = innoTransformer.fromProfileStream(startProfile);
+        Assert.assertEquals("testCollectApp", stringObjectMap.get("test2"));
+        Assert.assertEquals("testSection", stringObjectMap.get("test3"));
+        Assert.assertEquals(null, stringObjectMap.get("test4"));
+        Assert.assertEquals("188.112.192.214", stringObjectMap.get("test5"));
+        Assert.assertEquals("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 Safari/537.36", stringObjectMap.get("test6"));
+        Assert.assertTrue(System.currentTimeMillis() >= Long.valueOf((String) stringObjectMap.get("test7")));
     }
 }

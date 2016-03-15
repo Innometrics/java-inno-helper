@@ -6,9 +6,16 @@ package com.innometrics.integrationapp.model;
  */
 public class ProfileStreamMessage {
     Profile profile;
-    Object meta;
+    Meta meta;
 
-    public Object getMeta() {
+    public ProfileStreamMessage(Profile profile) {
+        this.profile = profile;
+    }
+
+    public ProfileStreamMessage() {
+    }
+
+    public Meta getMeta() {
         return meta;
     }
 

@@ -16,6 +16,48 @@
               "convertType": "string"
             },
             "valueRef": "testKey"
+          },{
+            "fieldName": "test2",
+            "type": "meta",
+            "fieldSettings": {
+              "convertType": "string"
+            },
+            "valueRef": "collectApp"
+          },{
+            "fieldName": "test3",
+            "type": "meta",
+            "fieldSettings": {
+              "convertType": "string"
+            },
+            "valueRef": "SECTION"
+          },{
+            "fieldName": "test4",
+            "type": "meta",
+            "fieldSettings": {
+              "convertType": "string"
+            },
+            "valueRef": "BUCKET_ID"
+          },{
+            "fieldName": "test5",
+            "type": "Macro",
+            "fieldSettings": {
+              "convertType": "string"
+            },
+            "valueRef": "REQUEST_IP"
+          },{
+            "fieldName": "test6",
+            "type": "Macro",
+            "fieldSettings": {
+              "convertType": "string"
+            },
+            "valueRef": "USER_AGENT"
+          },{
+            "fieldName": "test7",
+            "type": "Macro",
+            "fieldSettings": {
+              "convertType": "string"
+            },
+            "valueRef": "CURRENT_TIMESTAMP"
           }
         ]
       }

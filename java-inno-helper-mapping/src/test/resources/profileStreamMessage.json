@@ -1,0 +1,60 @@
+{
+  "profile": {
+    "id": "123123123",
+    "version": "1.0",
+    "createdAt": 1436194511051,
+    "sessions": [
+      {
+
+        "id": "wthp6owfyb",
+        "createdAt": 1436194511051,
+        "collectApp": "testCollectApp",
+        "section": "testSection",
+        "data": {
+          "asdasd": "killpackoff@gmail.com"
+        },
+        "events": [
+          {
+            "id": "9r1ypei6",
+            "createdAt": 1436194505065,
+            "definitionId": "EventDefinitionId",
+            "data": {
+              "testKey": "Friday DEMO ASDASDSA",
+              "qweqew": [{"product":"product1","price":"100","quantity":"1","img":"http://mondify.com/media/catalog/product/cache/1/image/9df78eab33525d08d6e5fb8d27136e95/0/1/01_16__1.jpg"},{"product":"sadfdasdadsdassdadsadsasda","price":"150","quantity":"2","img":"http://mondify.com/media/catalog/product/cache/1/image/9df78eab33525d08d6e5fb8d27136e95/i/l/il_570xn.432615787_3dzk.jpg"}],
+              "qwe":{"name":"Vasia","mail":"mail@ggg.com"}
+
+
+            }
+          }
+        ]
+      }
+    ],
+    "attributes": [],
+    "mergedProfiles": []
+  },
+  "meta": {
+    "isNew": false,
+    "eventListenerId": "3771",
+    "profileSize": 1,
+    "requestMeta": {
+      "requestTime": null,
+      "requestIp": "188.112.192.214",
+      "protocol": "HTTP/1.1",
+      "method": "GET",
+      "headers": {
+        "Accept-Language": "ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4,bg;q=0.2,sv;q=0.2",
+        "Host": "staging.innomdc.com",
+        "Referer": "http://habrahabr.ru/company/sebbia/blog/243537/",
+        "Accept-Encoding": "gzip, deflate, sdch",
+        "X-Forwarded-For": "188.112.192.214",
+        "X-Forwarded-Proto": "https",
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 Safari/537.36",
+        "X-Forwarded-Port": "443",
+        "Accept": "image/webp,*/*;q=0.8",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache"
+      }
+    }
+  }
+}

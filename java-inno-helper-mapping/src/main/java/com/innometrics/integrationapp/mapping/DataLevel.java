@@ -7,13 +7,14 @@ public enum DataLevel {
     EVENT_DATA,
     SESSION_DATA,
     ATTRIBUTE_DATA,
-    MACROS,
     STATIC,
     PROFILE_ID,
     PROFILE_CREATED,
     SESSION_CREATED,
     EVENT_CREATED,
+    EVENT_ID,
+    SESSION_ID,
     EVENT_DEFINITION,
-    COLLECT_APP,
-    SECTION
+    MACRO,
+    META,
 }
