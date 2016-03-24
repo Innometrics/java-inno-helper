@@ -42,17 +42,22 @@ public class InnoTransformer {
         if (rulesEntry == null) {
             return result;
         }
-        for (FieldSetsEntry fieldSet : rulesEntry.getFieldSets()) {
-            String outGoingFieldName = fieldSet.getSetName();
-            if (outGoingFieldName.equals(MAPPING_SET_NAME)) {
-                for (FieldsEntry field : fieldSet.getFields()) {
-                    if (field != null && field.getType() != null) {
-                        result.put(field.getFieldName(), getValue(profileStreamMessage, field));
-                    }
-                }
+        for (FieldsEntry field : getMapping(rulesEntry)) {
+            if (field != null && field.getType() != null) {
+                result.put(field.getFieldName(), getValue(profileStreamMessage, field));
             }
         }
         return result;
+    }
+
+    public List<FieldsEntry> getMapping(RulesEntry rulesEntry) {
+        for (FieldSetsEntry fieldSet : rulesEntry.getFieldSets()) {
+            String outGoingFieldName = fieldSet.getSetName();
+            if (outGoingFieldName.equals(MAPPING_SET_NAME)) {
+                return fieldSet.getFields();
+            }
+        }
+        return new ArrayList<>();
     }
 
     public Profile toProfile(Map<String, Object> map, String entryName) {
@@ -187,7 +192,7 @@ public class InnoTransformer {
                 break;
             }
             case EVENT_CREATED: {
-                result = session.getEvents().get(0).getCreatedAt().toString();
+                result = session.getEvents().get(0).getCreatedAt();
                 break;
             }
             case EVENT_ID: {
@@ -259,22 +264,32 @@ public class InnoTransformer {
 //                logger.debug(e.getMessage());
             }
         }
-        if (value instanceof JsonElement && type.equals(DataType.JSON)) {
+        if (value instanceof JsonElement && DataType.JSON.equals(type)) {
             return value;
-
         }
-        String tmp = value instanceof JsonPrimitive ? ((JsonPrimitive) value).getAsString() : String.valueOf(value);
         switch (type) {
-            case DOUBLE: {
-                return Double.valueOf(tmp);
-            }
             case JSON: {
                 return value;
             }
+            case DOUBLE: {
+                if (value instanceof Number) {
+                    return ((Number) value).doubleValue();
+                }
+                return Double.valueOf(getAssString(value));
+            }
             case INTEGER: {
-                return Integer.valueOf(tmp);
+                if (value instanceof Number) {
+                    return ((Number) value).longValue();
+                }
+                return Long.valueOf(getAssString(value));
+            }
+            case STRING: {
+                return getAssString(value);
             }
             case TIMESTAMP: {
+                if (value instanceof Long) return value;
+                if (value instanceof Date) return ((Date) value).getTime();
+                String tmp = getAssString(value);
                 if (settings.isEmpty()) return Long.valueOf(tmp);
                 String format = String.valueOf(settings.get("timeFormat"));
                 if (format != null && !format.isEmpty()) {
@@ -287,13 +302,10 @@ public class InnoTransformer {
                 }
                 break;
             }
-            case LONG: {
-                return Long.valueOf(tmp);
-            }
-            case STRING: {
-                return tmp;
-            }
             case DATE: {
+                if (value instanceof Date) return value;
+                if (value instanceof Long) return new Date((Long) value);
+                String tmp = getAssString(value);
                 if (settings.isEmpty()) return null;
                 String format = String.valueOf(settings.get("timeFormat"));
                 if (format != null && !format.isEmpty()) {
@@ -311,5 +323,7 @@ public class InnoTransformer {
         return value;
     }
 
-
+    String getAssString(Object o) {
+        return o instanceof JsonPrimitive ? ((JsonPrimitive) o).getAsString() : String.valueOf(o);
+    }
 }
