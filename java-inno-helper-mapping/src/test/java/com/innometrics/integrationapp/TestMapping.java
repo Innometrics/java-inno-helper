@@ -225,6 +225,8 @@ public class TestMapping {
         Assert.assertEquals(simpleDateFormat.parse(time), transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
     }
 
+
+
     @Test
     public void testMetaAndMacro() throws InterruptedException, ExecutionException, IOException, ProfileDataException {
         InnoTransformer innoTransformer = getTransformer("/testField.json");
