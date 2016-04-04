@@ -36,11 +36,10 @@ public class InnoHelper {
     private final URL hostWithVersion;
     private OkHttpClient httpClient = new OkHttpClient();
     private final ConcurrentMap<String, String> parameters = new ConcurrentHashMap<String, String>();
-    Set <AppConfigChangeListener> changeListeners = new HashSet<>();
+    Set<AppConfigChangeListener> changeListeners = new HashSet<>();
     public static final String DEFAULT_PORT = "80";
     public static final String DEFAULT_TTL = "300";
     public static final String DEFAULT_SIZE = "1000";
-    private static volatile long REQ_DELAY = 200;
     private volatile long lastGetConfigTime;
     private long getConfigTimeOut = 10_000;
     volatile App app;
@@ -79,10 +78,10 @@ public class InnoHelper {
     }
 
 
-    public synchronized App getApp() throws IOException, ExecutionException, InterruptedException {
+    public synchronized App getApp() throws Exception {
         if (lastGetConfigTime + getConfigTimeOut < System.currentTimeMillis()) {
             App tempApp = getObjectSync(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(apps, appID), App.class);
-            if (!tempApp.equals(app)){
+            if (!tempApp.equals(app)) {
                 app = tempApp;
                 for (AppConfigChangeListener changeListener : changeListeners) {
                     changeListener.change(app);
@@ -106,7 +105,7 @@ public class InnoHelper {
                 result = InnoHelperUtils.getGson().fromJson(container.get(fieldName), aClass);
             }
         } else {
-            System.out.println("http error :" + response.code() + " [" + response.message() + "]");
+            System.err.println("http error :" + response.code() + " [" + response.message() + "]");
         }
         return result;
     }
@@ -122,13 +121,6 @@ public class InnoHelper {
         Response response = call.execute();
         return processResponse(response, tClass);
     }
-
-//    private void getObjectAsync(RestURI restURI, Callback callback) throws ExecutionException, InterruptedException, IOException {
-//        URL endpoint = build(restURI);
-//        Request request = new Request.Builder().url(endpoint).get().build();
-//        Call call = httpClient.newCall(request);
-//        call.enqueue(callback);
-//    }
 
     private Response postObjectSync(RestURI url, Object toUpdate) throws IOException {
         if (toUpdate != null) {
@@ -149,7 +141,6 @@ public class InnoHelper {
                 .withResource(profiles, profile.getId()), profile);
     }
 
-    //
     public Response mergeProfile(String companyId, String bucketId, String canonicalProfile, String... tempProfiles) throws ExecutionException, IOException {
         Profile mergeProfile = new Profile();
         mergeProfile.setId(canonicalProfile);
@@ -160,7 +151,6 @@ public class InnoHelper {
                 .withResource(profiles, canonicalProfile), mergeProfile);
     }
 
-    //
     public Segment[] getSegments() throws InterruptedException, ExecutionException, IOException {
         return getObjectSync(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
@@ -168,7 +158,6 @@ public class InnoHelper {
                 .withResources(segments), Segment[].class);
     }
 
-    //
     public Segment getSegment(String segmentId) throws IOException, ExecutionException, InterruptedException {
         return getObjectSync(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
@@ -176,7 +165,6 @@ public class InnoHelper {
                 .withResource(segments, segmentId), Segment.class);
     }
 
-    // todo
     public IqlResult[] evaluateProfile(String profileId, boolean doFiltering) throws InterruptedException, ExecutionException, IqlSyntaxException, IOException {
         Segment[] segments = getSegments();
         if (segments.length > 0) {
@@ -199,25 +187,21 @@ public class InnoHelper {
     }
 
 
-    private URL build(RestURI uri) {
+    private URL build(RestURI uri) throws MalformedURLException {
         Map<String, String> execParameters;
         execParameters = this.parameters;
-        try {
-            return uri.build(execParameters);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+        return uri.build(execParameters);
     }
 
-    public <T> T getCustom(String key, Class<T> aClass) throws ExecutionException, InterruptedException, IOException {
+    public <T> T getCustom(String key, Class<T> aClass) throws Exception {
         return InnoHelperUtils.getGson().fromJson(getCustom(key), aClass);
     }
 
-    public RulesEntry[] getRulesEntries() throws ExecutionException, InterruptedException, IOException {
+    public RulesEntry[] getRulesEntries() throws Exception {
         return getCustom("rules", RulesEntry[].class);
     }
 
-    public JsonElement getCustom(String key) throws ExecutionException, InterruptedException, IOException {
+    public JsonElement getCustom(String key) throws Exception {
         return getApp().getCustom().get(key);
     }
 
