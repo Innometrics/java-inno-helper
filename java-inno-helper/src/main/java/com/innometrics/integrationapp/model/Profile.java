@@ -16,10 +16,11 @@ public class Profile extends Dirty {
     private Set<String> mergedProfiles = new LinkedHashSet();
 
     public Profile() {
+        // need default constructor
     }
 
     public Profile(String profileId) {
-        id= profileId;
+        id = profileId;
     }
 
     public String getId() {
@@ -43,11 +44,11 @@ public class Profile extends Dirty {
     }
 
     public void setSessions(List<Session> sessions) {
-        if(sessions == null) {
-            sessions = new ArrayList<Session>();
+        if (sessions == null) {
+            this.sessions = new ArrayList<Session>();
+        } else {
+            this.sessions = sessions;
         }
-
-        this.sessions = sessions;
     }
 
     public Date getCreatedAt() {
@@ -71,24 +72,26 @@ public class Profile extends Dirty {
     }
 
     public void setAttributes(List<Attribute> attributes) {
-        if(attributes == null) {
-            attributes = new ArrayList<Attribute>();
+        if (attributes == null) {
+            this.attributes = new ArrayList<Attribute>();
         }
-        for (Attribute attribute : attributes) {
+        for (Attribute attribute : this.attributes) {
             attribute.setDirty(true);
         }
         this.attributes = attributes;
         setDirty(true);
     }
-    public void setAttribute( String collectApp,String section , String name , JsonElement value) {
-        if(attributes == null) {
+
+    public void setAttribute(String collectApp, String section, String name, JsonElement value) {
+        if (attributes == null) {
             attributes = new ArrayList<Attribute>();
         }
-        Attribute attribute= new Attribute(collectApp,section);
-        attribute.putData(name,value);
+        Attribute attribute = new Attribute(collectApp, section);
+        attribute.putData(name, value);
         this.attributes.add(attribute);
     }
-    public void addSession(Session session){
+
+    public void addSession(Session session) {
         setDirty(true);
         session.setDirty(true);
         sessions.add(session);
@@ -110,20 +113,37 @@ public class Profile extends Dirty {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         Profile profile = (Profile) o;
 
-        if (attributes != null ? !attributes.equals(profile.attributes) : profile.attributes != null) return false;
-        if (createdAt != null ? !createdAt.equals(profile.createdAt) : profile.createdAt != null) return false;
-        if (id != null ? !id.equals(profile.id) : profile.id != null) return false;
-        if (mergedProfiles != null ? !mergedProfiles.equals(profile.mergedProfiles) : profile.mergedProfiles != null)
+        if (attributes != null ? !attributes.equals(profile.attributes) : profile.attributes != null) {
             return false;
-        if (sessions != null ? !sessions.equals(profile.sessions) : profile.sessions != null) return false;
-        if (version != null ? !version.equals(profile.version) : profile.version != null) return false;
+        }
+        if (createdAt != null ? !createdAt.equals(profile.createdAt) : profile.createdAt != null) {
+            return false;
+        }
+        if (id != null ? !id.equals(profile.id) : profile.id != null) {
+            return false;
+        }
+        if (mergedProfiles != null ? !mergedProfiles.equals(profile.mergedProfiles) : profile.mergedProfiles != null) {
+            return false;
+        }
+        if (sessions != null ? !sessions.equals(profile.sessions) : profile.sessions != null) {
+            return false;
+        }
+        if (version != null ? !version.equals(profile.version) : profile.version != null) {
+            return false;
+        }
 
-        return true;
+        {
+            return true;
+        }
     }
 
     @Override

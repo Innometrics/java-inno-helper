@@ -30,7 +30,6 @@ import static com.innometrics.integrationapp.utils.InnoHelperUtils.*;
 import static com.innometrics.integrationapp.utils.ConfigNames.*;
 
 public class InnoHelper {
-    private static final Logger logger = Logger.getLogger(InnoHelper.class.getName());
     private static final String API_VERSION = "v1";
     private final URL hostWithVersion;
     private OkHttpClient httpClient = new OkHttpClient();
