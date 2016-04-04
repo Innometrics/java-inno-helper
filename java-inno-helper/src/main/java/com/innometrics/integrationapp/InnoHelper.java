@@ -13,7 +13,6 @@ import com.innometrics.integrationapp.utils.SegmentUtil;
 import com.innometrics.iql.IqlResult;
 import com.innometrics.iql.IqlSyntaxException;
 import com.squareup.okhttp.*;
-import com.sun.istack.internal.logging.Logger;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -24,14 +23,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 
 import static com.innometrics.integrationapp.constants.Resources.*;
 import static com.innometrics.integrationapp.utils.InnoHelperUtils.*;
 import static com.innometrics.integrationapp.utils.ConfigNames.*;
 
 public class InnoHelper {
-    private static final Logger logger = Logger.getLogger(InnoHelper.class);
+    private static final Logger logger = Logger.getLogger(InnoHelper.class.getName());
     private static final String API_VERSION = "v1";
     private final URL hostWithVersion;
     private OkHttpClient httpClient = new OkHttpClient();
@@ -104,7 +103,7 @@ public class InnoHelper {
             try {
                 container = (JsonObject) jsonParser.parse(response.body().string());
             } catch (IOException e) {
-                logger.warning(e.getMessage(),e);
+                logger.warning(e.getMessage());
             }
             String fieldName = aClass.getSimpleName().toLowerCase();
             if (container != null && container.has(fieldName)) {
@@ -129,7 +128,7 @@ public class InnoHelper {
             Response response = call.execute();
             return processResponse(response, tClass);
         } catch (IOException e) {
-            logger.warning(e.getMessage(), e);
+            logger.warning(e.getMessage());
         }
         return null;
     }
@@ -143,7 +142,7 @@ public class InnoHelper {
                 Request request = new Request.Builder().url(endpoint).post(requestBody).build();
                 return httpClient.newCall(request).execute();
             } catch (IOException e) {
-                logger.warning(e.getMessage(), e);
+                logger.warning(e.getMessage());
                 e.printStackTrace();
             }
         } else {
