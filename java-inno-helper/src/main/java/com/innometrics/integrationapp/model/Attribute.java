@@ -56,8 +56,12 @@ public class Attribute extends Dirty {
 
     @Override
     public boolean equals(Object o) {
-        if (this != o) {return true;}
-        if (!(o instanceof Attribute)) {return false;}
+        if (this != o) {
+            return true;
+        }
+        if (!(o instanceof Attribute)) {
+            return false;
+        }
         Attribute attribute = (Attribute) o;
         return collectApp.equals(attribute.collectApp) &&
                 data.equals(attribute.data) &&

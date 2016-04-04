@@ -32,11 +32,13 @@ public class App {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {return true;}
-        if (o == null || getClass() != o.getClass()) {return false;}
-
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         App app = (App) o;
-
         return !(id != null ? !id.equals(app.id) : app.id != null) &&
                 !(custom != null ? !custom.equals(app.custom) : app.custom != null)
                 && (settings != null ? settings.equals(app.settings) : app.settings == null);
