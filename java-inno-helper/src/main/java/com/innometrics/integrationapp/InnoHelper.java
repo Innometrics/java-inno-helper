@@ -96,15 +96,11 @@ public class InnoHelper {
         this.changeListeners.add(changeListener);
     }
 
-    <T> T processResponse(Response response, Class<T> aClass) {
+    <T> T processResponse(Response response, Class<T> aClass) throws IOException {
         T result = null;
         if (response.isSuccessful()) {
             JsonObject container = null;
-            try {
                 container = (JsonObject) jsonParser.parse(response.body().string());
-            } catch (IOException e) {
-                logger.warning(e.getMessage());
-            }
             String fieldName = aClass.getSimpleName().toLowerCase();
             if (container != null && container.has(fieldName)) {
                 result = InnoHelperUtils.getGson().fromJson(container.get(fieldName), aClass);
@@ -128,32 +124,26 @@ public class InnoHelper {
             return processResponse(response, tClass);
     }
 
-    private Response postObjectSync(RestURI url, Object toUpdate) {
+    private Response postObjectSync(RestURI url, Object toUpdate) throws IOException {
         if (toUpdate != null) {
             URL endpoint = null;
-            try {
                 endpoint = build(url);
                 RequestBody requestBody = RequestBody.create(JSON, InnoHelperUtils.getGson().toJson(toUpdate));
                 Request request = new Request.Builder().url(endpoint).post(requestBody).build();
                 return httpClient.newCall(request).execute();
-            } catch (IOException e) {
-                logger.warning(e.getMessage());
-                e.printStackTrace();
-            }
         } else {
             throw new UnsupportedOperationException("POST operation does not support NULL!");
         }
-        return null;
     }
 
-    public Response saveProfile(Profile profile)  {
+    public Response saveProfile(Profile profile) throws IOException {
         return postObjectSync(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
                 .withResource(buckets, bucketId)
                 .withResource(profiles, profile.getId()), profile);
     }
 
-    public Response mergeProfile(String companyId, String bucketId, String canonicalProfile, String... tempProfiles){
+    public Response mergeProfile(String companyId, String bucketId, String canonicalProfile, String... tempProfiles) throws IOException {
         Profile mergeProfile = new Profile();
         mergeProfile.setId(canonicalProfile);
         mergeProfile.setMergedProfiles(new HashSet<String>(Arrays.asList(tempProfiles)));
@@ -177,8 +167,9 @@ public class InnoHelper {
                 .withResource(segments, segmentId), Segment.class);
     }
 
-    public IqlResult[] evaluateProfile(String profileId, boolean doFiltering) throws IqlSyntaxException, IOException {
-        Segment[] segments = getSegments();
+    public IqlResult[] evaluateProfile(String profileId, boolean doFiltering) throws IOException, IqlSyntaxException {
+        Segment[] segments = new Segment[0];
+            segments = getSegments();
         if (segments.length > 0) {
             Profile toEvaluate = getProfile(profileId);
             IqlResult[] toReturn = new IqlResult[segments.length];
