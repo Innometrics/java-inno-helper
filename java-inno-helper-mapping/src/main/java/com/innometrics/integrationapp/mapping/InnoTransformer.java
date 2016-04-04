@@ -27,7 +27,7 @@ public class InnoTransformer {
     Map<String, RulesEntry> rulesEntries = new ConcurrentHashMap<>();
     InnoHelper innoHelper;
 
-    public InnoTransformer(InnoHelper innoHelper) throws ExecutionException, InterruptedException, IOException {
+    public InnoTransformer(InnoHelper innoHelper) throws Exception {
         this.innoHelper = innoHelper;
         RulesEntry[] rulesEntries = innoHelper.getCustom(RULES, RulesEntry[].class);
         for (RulesEntry rulesEntry : rulesEntries) {

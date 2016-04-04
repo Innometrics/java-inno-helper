@@ -31,7 +31,7 @@ import java.util.concurrent.ExecutionException;
 
 public class TestMapping {
 
-    InnoTransformer getTransformer(String settingsFile) throws ExecutionException, InterruptedException, IOException {
+    InnoTransformer getTransformer(String settingsFile) throws Exception {
         InnoHelper innoHelper = Mockito.mock(InnoHelper.class);
         RulesEntry[] rulesEntries = new Gson().fromJson(new FileReader(new File(getClass().getResource(settingsFile).getPath())), RulesEntry[].class);
         Mockito.when(innoHelper.getCustom(InnoTransformer.RULES, RulesEntry[].class)).thenReturn(rulesEntries);
@@ -44,7 +44,7 @@ public class TestMapping {
     }
 
     @Test
-    public void testTransformFromProfile() throws ExecutionException, InterruptedException, IOException, ProfileDataException {
+    public void testTransformFromProfile() throws Exception, ProfileDataException {
         InnoTransformer innoTransformer = getTransformer("/testField.json");
         Profile profile = new Profile();
         profile.setId("test");
@@ -63,7 +63,7 @@ public class TestMapping {
     }
 
     @Test
-    public void testTransformFromProfileMultiThread() throws ExecutionException, InterruptedException, IOException, ProfileDataException {
+    public void testTransformFromProfileMultiThread() throws Exception, ProfileDataException {
         final InnoTransformer innoTransformer = getTransformer("/testField.json");
         final Profile profile = new Profile();
         profile.setId("test");
@@ -93,7 +93,7 @@ public class TestMapping {
     }
 
     @Test
-    public void testTransformToProfile() throws IOException, ExecutionException, InterruptedException {
+    public void testTransformToProfile() throws Exception {
         InnoTransformer innoTransformer = getTransformer("/testFieldToProfile.json");
         Map<String, Object> data = new HashMap<>();
         data.put("test", "testValue"); // (f.e. csv header and  cell)
@@ -102,7 +102,7 @@ public class TestMapping {
     }
 
     @Test
-    public void testDataLevelfromProfile() throws ProfileDataException, InterruptedException, ExecutionException, IOException {
+    public void testDataLevelfromProfile() throws ProfileDataException, Exception {
         String time = RandomStringUtils.randomAlphanumeric(12);
         String url = RandomStringUtils.random(10);
         String profileId = RandomStringUtils.randomNumeric(10);
@@ -170,7 +170,7 @@ public class TestMapping {
     }
 
     @Test
-    public void testDataLevelToProfile() throws ProfileDataException, InterruptedException, ExecutionException, IOException {
+    public void testDataLevelToProfile() throws ProfileDataException, Exception {
         String time = RandomStringUtils.randomAlphanumeric(12);
         String url = RandomStringUtils.randomNumeric(10);
         String id = RandomStringUtils.randomNumeric(10);
@@ -198,7 +198,7 @@ public class TestMapping {
     }
 
     @Test
-    public void testDateConvert() throws ProfileDataException, ParseException, InterruptedException, ExecutionException, IOException {
+    public void testDateConvert() throws ProfileDataException, Exception {
         String time = "2015-01-01 11:11:11";
         Profile profile = new Profile();
         Event event = new Event();
@@ -228,7 +228,7 @@ public class TestMapping {
 
 
     @Test
-    public void testMetaAndMacro() throws InterruptedException, ExecutionException, IOException, ProfileDataException {
+    public void testMetaAndMacro() throws Exception, ProfileDataException {
         InnoTransformer innoTransformer = getTransformer("/testField.json");
         ProfileStreamMessage startProfile = InnoHelperUtils.getGson().fromJson(new FileReader(new File(getClass().getResource("/profileStreamMessage.json").getPath())), ProfileStreamMessage.class);
         Map<String, Object> stringObjectMap = innoTransformer.fromProfileStream(startProfile);

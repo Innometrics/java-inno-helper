@@ -139,7 +139,7 @@ public class SimpleTest {
     }
 
     @Test
-    public void testGetDefultAppSettings() throws IOException, ExecutionException, InterruptedException {
+    public void testGetDefultAppSettings() throws Exception {
         server.enqueue(createResponseWithBodeyFromFile("/appSettigs.json"));
         InnoHelper innoHelper = new InnoHelper(config);
         RulesEntry[] setting = innoHelper.getCustom("rules", RulesEntry[].class);
@@ -164,7 +164,7 @@ public class SimpleTest {
     }
 
     @Test
-    public void testGetUserAppSettings() throws IOException, ExecutionException, InterruptedException {
+    public void testGetUserAppSettings() throws Exception {
         server.enqueue(createResponseWithBodeyFromFile("/appSettigs.json"));
         InnoHelper innoHelper = new InnoHelper(config);
         UserSettingModel setting = innoHelper.getCustom("someKey", UserSettingModel.class);
