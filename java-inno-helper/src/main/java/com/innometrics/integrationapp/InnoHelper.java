@@ -13,6 +13,7 @@ import com.innometrics.integrationapp.utils.SegmentUtil;
 import com.innometrics.iql.IqlResult;
 import com.innometrics.iql.IqlSyntaxException;
 import com.squareup.okhttp.*;
+import com.sun.istack.internal.logging.Logger;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -24,14 +25,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Logger;
 
 import static com.innometrics.integrationapp.constants.Resources.*;
 import static com.innometrics.integrationapp.utils.InnoHelperUtils.*;
 import static com.innometrics.integrationapp.utils.ConfigNames.*;
 
 public class InnoHelper {
-    private static final Logger logger = Logger.getLogger(InnoHelper.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(InnoHelper.class);
     private static final String API_VERSION = "v1";
     private final URL hostWithVersion;
     private OkHttpClient httpClient = new OkHttpClient();
@@ -78,10 +78,11 @@ public class InnoHelper {
     }
 
 
-    public synchronized App getApp() throws Exception {
+    public synchronized App getApp()  {
         if (lastGetConfigTime + getConfigTimeOut < System.currentTimeMillis()) {
-            App tempApp = getObjectSync(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(apps, appID), App.class);
-            if (!tempApp.equals(app)) {
+            App tempApp = null;
+                tempApp = getObjectSync(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(apps, appID), App.class);
+            if (!(tempApp != null && tempApp.equals(app))) {
                 app = tempApp;
                 for (AppConfigChangeListener changeListener : changeListeners) {
                     changeListener.change(app);
@@ -96,12 +97,17 @@ public class InnoHelper {
         this.changeListeners.add(changeListener);
     }
 
-    <T> T processResponse(Response response, Class<T> aClass) throws IOException {
+    <T> T processResponse(Response response, Class<T> aClass) {
         T result = null;
         if (response.isSuccessful()) {
-            JsonObject container = (JsonObject) jsonParser.parse(response.body().string());
+            JsonObject container = null;
+            try {
+                container = (JsonObject) jsonParser.parse(response.body().string());
+            } catch (IOException e) {
+                logger.warning(e.getMessage(),e);
+            }
             String fieldName = aClass.getSimpleName().toLowerCase();
-            if (container.has(fieldName)) {
+            if (container != null && container.has(fieldName)) {
                 result = InnoHelperUtils.getGson().fromJson(container.get(fieldName), aClass);
             }
         } else {
@@ -110,38 +116,50 @@ public class InnoHelper {
         return result;
     }
 
-    public Profile getProfile(String profileId) throws InterruptedException, ExecutionException, IOException {
+    public Profile getProfile(String profileId)  {
         return getObjectSync(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(profiles, profileId), Profile.class);
     }
 
-    private <T> T getObjectSync(RestURI restURI, Class<T> tClass) throws ExecutionException, InterruptedException, IOException {
-        URL endpoint = build(restURI);
-        Request request = new Request.Builder().url(endpoint).get().build();
-        Call call = httpClient.newCall(request);
-        Response response = call.execute();
-        return processResponse(response, tClass);
+    private <T> T getObjectSync(RestURI restURI, Class<T> tClass) {
+        URL endpoint = null;
+        try {
+            endpoint = build(restURI);
+            Request request = new Request.Builder().url(endpoint).get().build();
+            Call call = httpClient.newCall(request);
+            Response response = call.execute();
+            return processResponse(response, tClass);
+        } catch (IOException e) {
+            logger.warning(e.getMessage(), e);
+        }
+        return null;
     }
 
-    private Response postObjectSync(RestURI url, Object toUpdate) throws IOException {
+    private Response postObjectSync(RestURI url, Object toUpdate) {
         if (toUpdate != null) {
-            URL endpoint = build(url);
-
-            RequestBody requestBody = RequestBody.create(JSON, InnoHelperUtils.getGson().toJson(toUpdate));
-            Request request = new Request.Builder().url(endpoint).post(requestBody).build();
-            return httpClient.newCall(request).execute();
+            URL endpoint = null;
+            try {
+                endpoint = build(url);
+                RequestBody requestBody = RequestBody.create(JSON, InnoHelperUtils.getGson().toJson(toUpdate));
+                Request request = new Request.Builder().url(endpoint).post(requestBody).build();
+                return httpClient.newCall(request).execute();
+            } catch (IOException e) {
+                logger.warning(e.getMessage(), e);
+                e.printStackTrace();
+            }
         } else {
             throw new UnsupportedOperationException("POST operation does not support NULL!");
         }
+        return null;
     }
 
-    public Response saveProfile(Profile profile) throws IOException {
+    public Response saveProfile(Profile profile)  {
         return postObjectSync(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
                 .withResource(buckets, bucketId)
                 .withResource(profiles, profile.getId()), profile);
     }
 
-    public Response mergeProfile(String companyId, String bucketId, String canonicalProfile, String... tempProfiles) throws ExecutionException, IOException {
+    public Response mergeProfile(String companyId, String bucketId, String canonicalProfile, String... tempProfiles){
         Profile mergeProfile = new Profile();
         mergeProfile.setId(canonicalProfile);
         mergeProfile.setMergedProfiles(new HashSet<String>(Arrays.asList(tempProfiles)));
@@ -151,21 +169,21 @@ public class InnoHelper {
                 .withResource(profiles, canonicalProfile), mergeProfile);
     }
 
-    public Segment[] getSegments() throws InterruptedException, ExecutionException, IOException {
+    public Segment[] getSegments() {
         return getObjectSync(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
                 .withResource(buckets, bucketId)
                 .withResources(segments), Segment[].class);
     }
 
-    public Segment getSegment(String segmentId) throws IOException, ExecutionException, InterruptedException {
+    public Segment getSegment(String segmentId) {
         return getObjectSync(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
                 .withResource(buckets, bucketId)
                 .withResource(segments, segmentId), Segment.class);
     }
 
-    public IqlResult[] evaluateProfile(String profileId, boolean doFiltering) throws InterruptedException, ExecutionException, IqlSyntaxException, IOException {
+    public IqlResult[] evaluateProfile(String profileId, boolean doFiltering) throws IqlSyntaxException {
         Segment[] segments = getSegments();
         if (segments.length > 0) {
             Profile toEvaluate = getProfile(profileId);
@@ -193,15 +211,15 @@ public class InnoHelper {
         return uri.build(execParameters);
     }
 
-    public <T> T getCustom(String key, Class<T> aClass) throws Exception {
+    public <T> T getCustom(String key, Class<T> aClass)  {
         return InnoHelperUtils.getGson().fromJson(getCustom(key), aClass);
     }
 
-    public RulesEntry[] getRulesEntries() throws Exception {
+    public RulesEntry[] getRulesEntries() {
         return getCustom("rules", RulesEntry[].class);
     }
 
-    public JsonElement getCustom(String key) throws Exception {
+    public JsonElement getCustom(String key)  {
         return getApp().getCustom().get(key);
     }
 
