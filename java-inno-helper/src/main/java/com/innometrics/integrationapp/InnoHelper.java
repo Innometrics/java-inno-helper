@@ -77,7 +77,7 @@ public class InnoHelper {
     }
 
 
-    public synchronized App getApp()  {
+    public synchronized App getApp() throws IOException {
         if (lastGetConfigTime + getConfigTimeOut < System.currentTimeMillis()) {
             App tempApp = null;
                 tempApp = getObjectSync(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(apps, appID), App.class);
@@ -115,22 +115,17 @@ public class InnoHelper {
         return result;
     }
 
-    public Profile getProfile(String profileId)  {
+    public Profile getProfile(String profileId) throws IOException {
         return getObjectSync(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(profiles, profileId), Profile.class);
     }
 
-    private <T> T getObjectSync(RestURI restURI, Class<T> tClass) {
+    private <T> T getObjectSync(RestURI restURI, Class<T> tClass) throws IOException {
         URL endpoint = null;
-        try {
             endpoint = build(restURI);
             Request request = new Request.Builder().url(endpoint).get().build();
             Call call = httpClient.newCall(request);
             Response response = call.execute();
             return processResponse(response, tClass);
-        } catch (IOException e) {
-            logger.warning(e.getMessage());
-        }
-        return null;
     }
 
     private Response postObjectSync(RestURI url, Object toUpdate) {
@@ -168,21 +163,21 @@ public class InnoHelper {
                 .withResource(profiles, canonicalProfile), mergeProfile);
     }
 
-    public Segment[] getSegments() {
+    public Segment[] getSegments() throws IOException {
         return getObjectSync(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
                 .withResource(buckets, bucketId)
                 .withResources(segments), Segment[].class);
     }
 
-    public Segment getSegment(String segmentId) {
+    public Segment getSegment(String segmentId) throws IOException {
         return getObjectSync(new RestURI(hostWithVersion)
                 .withResource(companies, companyId)
                 .withResource(buckets, bucketId)
                 .withResource(segments, segmentId), Segment.class);
     }
 
-    public IqlResult[] evaluateProfile(String profileId, boolean doFiltering) throws IqlSyntaxException {
+    public IqlResult[] evaluateProfile(String profileId, boolean doFiltering) throws IqlSyntaxException, IOException {
         Segment[] segments = getSegments();
         if (segments.length > 0) {
             Profile toEvaluate = getProfile(profileId);
@@ -210,15 +205,15 @@ public class InnoHelper {
         return uri.build(execParameters);
     }
 
-    public <T> T getCustom(String key, Class<T> aClass)  {
+    public <T> T getCustom(String key, Class<T> aClass) throws IOException {
         return InnoHelperUtils.getGson().fromJson(getCustom(key), aClass);
     }
 
-    public RulesEntry[] getRulesEntries() {
+    public RulesEntry[] getRulesEntries() throws IOException {
         return getCustom("rules", RulesEntry[].class);
     }
 
-    public JsonElement getCustom(String key)  {
+    public JsonElement getCustom(String key) throws IOException {
         return getApp().getCustom().get(key);
     }
 
