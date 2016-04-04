@@ -8,7 +8,6 @@ import org.apache.commons.lang3.text.StrBuilder;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Logger;
@@ -19,11 +18,16 @@ public class InnoHelperUtils {
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String ACCEPT = "Accept";
     static final Gson gson = initGson();
-    static Logger logger = Logger.getLogger(InnoHelperUtils.class.getName());
+//    static Logger logger = Logger.getLogger(InnoHelperUtils.class.getName());
     private static final char[] chars = "1234567890abcdefghijklmnopqrstuvwxyz".toCharArray();
     // Added required cache params:
     public static final String CACHE_SIZE = "INNO_CACHE_SIZE";
     public static final String CACHE_TTL = "INNO_CACHE_TTL";
+    private static Random r = new Random();
+    private static StringBuilder stringBuilder = new StringBuilder();
+    private InnoHelperUtils() {
+        //not use instance this class
+    }
 
     public static Gson getGson() {
         return gson;
@@ -58,14 +62,13 @@ public class InnoHelperUtils {
         return strBuilder.toString();
     }
 
-    private static Random r = new Random();
 
     public static String getRandomID(int length) {
-        String newUUID = "";
+        stringBuilder.setLength(0);
         for (int i = 0; i < length; i++) {
-            newUUID += chars[r.nextInt(35)];
+            stringBuilder.append(chars[r.nextInt(35)]);
         }
-        return newUUID;
+        return stringBuilder.toString();
     }
 
    public static Map<String, String> getConfigFromEnvOrDefault() {
@@ -75,7 +78,7 @@ public class InnoHelperUtils {
         try {
             properties.load(url.openStream());
         } catch (IOException e) {
-            logger.info("default.properties not found");
+            throw  new IllegalArgumentException("default.properties not found");
         }
         for (ConfigNames configName : ConfigNames.values()) {
             String res = System.getenv(configName.name());

@@ -63,16 +63,13 @@ public class Event extends Dirty {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
         Event event = (Event) o;
-
-        if (createdAt != null ? !createdAt.equals(event.createdAt) : event.createdAt != null) return false;
-        if (data != null ? !data.equals(event.data) : event.data != null) return false;
-        if (definitionId != null ? !definitionId.equals(event.definitionId) : event.definitionId != null) return false;
-        if (id != null ? !id.equals(event.id) : event.id != null) return false;
-        return true;
+        return !(createdAt != null ? !createdAt.equals(event.createdAt) : event.createdAt != null) &&
+                !(data != null ? !data.equals(event.data) : event.data != null) &&
+                !(definitionId != null ? !definitionId.equals(event.definitionId) : event.definitionId != null) &&
+                !(id != null ? !id.equals(event.id) : event.id != null);
     }
 
     @Override

@@ -13,6 +13,7 @@ public class ProfileStreamMessage {
     }
 
     public ProfileStreamMessage() {
+        // need default constructor
     }
 
     public Meta getMeta() {

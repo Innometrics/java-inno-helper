@@ -38,7 +38,6 @@ public class InnoHelper {
     public static final String DEFAULT_TTL = "300";
     public static final String DEFAULT_SIZE = "1000";
     private volatile long lastGetConfigTime;
-    private long getConfigTimeOut = 10_000;
     volatile App app;
     String companyId;
     String bucketId;
@@ -76,6 +75,7 @@ public class InnoHelper {
 
 
     public synchronized App getApp() throws IOException {
+        long getConfigTimeOut = 10_000;
         if (lastGetConfigTime + getConfigTimeOut < System.currentTimeMillis()) {
             App tempApp = null;
                 tempApp = getObjectSync(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(apps, appID), App.class);

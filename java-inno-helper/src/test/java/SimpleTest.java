@@ -6,7 +6,6 @@ import com.innometrics.integrationapp.appsettings.FieldSetsEntry;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.model.*;
-import com.innometrics.integrationapp.utils.ConfigNames;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.mockwebserver.MockResponse;

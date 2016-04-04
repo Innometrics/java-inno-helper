@@ -3,7 +3,6 @@ package com.innometrics.integrationapp.model;
 import com.google.gson.JsonElement;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class App {
@@ -33,14 +32,14 @@ public class App {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
 
         App app = (App) o;
 
-        if (id != null ? !id.equals(app.id) : app.id != null) return false;
-        if (custom != null ? !custom.equals(app.custom) : app.custom != null) return false;
-        return settings != null ? settings.equals(app.settings) : app.settings == null;
+        return !(id != null ? !id.equals(app.id) : app.id != null) &&
+                !(custom != null ? !custom.equals(app.custom) : app.custom != null)
+                && (settings != null ? settings.equals(app.settings) : app.settings == null);
 
     }
 

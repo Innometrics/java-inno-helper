@@ -10,19 +10,14 @@ import com.innometrics.integrationapp.mapping.InnoTransformer;
 import com.innometrics.integrationapp.mapping.ProfileDataException;
 import com.innometrics.integrationapp.model.*;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Created by killpack on 01.12.15.

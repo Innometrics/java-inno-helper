@@ -7,22 +7,22 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.*;
 
 
-public class Session  extends Dirty {
+public class Session extends Dirty {
 
-    private String id  = InnoHelperUtils.getRandomID(8);
+    private String id = InnoHelperUtils.getRandomID(8);
     private Date createdAt = new Date();
-    private String collectApp =StringUtils.EMPTY;
+    private String collectApp = StringUtils.EMPTY;
     private String section = StringUtils.EMPTY;
     private Map<String, JsonElement> data = new HashMap<>();
     private List<Event> events = new ArrayList<Event>();
 
+    public Session() {
+        // need default constructor
+    }
+
     public String getId() {
         setDirty(true);
         return id;
-    }
-
-    public Session() {
-        // need default constructor
     }
 
     public void setId(String id) {
@@ -75,7 +75,7 @@ public class Session  extends Dirty {
         this.events = events;
     }
 
-    public void addEvent(Event... events ) {
+    public void addEvent(Event... events) {
         setDirty(true);
         for (Event event : events) {
             event.setSession(this);
@@ -85,8 +85,12 @@ public class Session  extends Dirty {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {return true;}
-        if (o == null || getClass() != o.getClass()) {return false;}
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Session session = (Session) o;
         return collectApp.equals(session.collectApp) && createdAt.equals(session.createdAt) &&
                 !(data != null ? !data.equals(session.data) : session.data != null) &&
@@ -116,6 +120,6 @@ public class Session  extends Dirty {
 
     public void putData(String fieldName, JsonElement element) {
         setDirty(true);
-        data.put(fieldName,element);
+        data.put(fieldName, element);
     }
 }
