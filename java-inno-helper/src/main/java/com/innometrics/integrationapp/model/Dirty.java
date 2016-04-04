@@ -1,16 +1,18 @@
 package com.innometrics.integrationapp.model;
 
+import java.io.Serializable;
+
 /**
  * Created by killpack on 30.11.15.
  */
-public class Dirty {
-    transient boolean  dirty =true;
+public class Dirty implements Serializable {
+    transient boolean isDirty =true;
 
     public boolean isDirty() {
-        return dirty;
+        return isDirty;
     }
 
     public void setDirty(boolean dirty) {
-        this.dirty = dirty;
+        this.isDirty = dirty;
     }
 }

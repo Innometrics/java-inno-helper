@@ -28,7 +28,7 @@ public class ThrottlingInterceptor implements Interceptor {
                     Thread.sleep(maxRequestSpeed - diff);
                 }
                 catch (InterruptedException e) {
-                    System.out.println("Failed to intercept");
+                    System.err.println("Failed to intercept");
                     e.printStackTrace();
                 }
             lastRequest = System.currentTimeMillis();

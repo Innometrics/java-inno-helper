@@ -7,6 +7,9 @@ import com.innometrics.iql.IqlSyntaxException;
 import static com.innometrics.integrationapp.utils.InnoHelperUtils.*;
 
 public class SegmentUtil {
+    private SegmentUtil() {
+        //not use instance this class
+    }
 
     public static IqlResult getIqlResult(String iql, Profile profile, boolean filter) throws IqlSyntaxException {
         IqlExecutor executor = new IqlExecutor(iql);

@@ -8,7 +8,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -39,8 +38,9 @@ public class RestURI {
         try {
             return URLEncoder.encode(input, Charset.defaultCharset().name());
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
+        return null;
     }
 
     public URL build(Map<String, String> parameters) throws MalformedURLException {

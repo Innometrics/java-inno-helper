@@ -119,9 +119,7 @@ public class Profile extends Dirty {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
         Profile profile = (Profile) o;
-
         if (attributes != null ? !attributes.equals(profile.attributes) : profile.attributes != null) {
             return false;
         }
@@ -137,13 +135,7 @@ public class Profile extends Dirty {
         if (sessions != null ? !sessions.equals(profile.sessions) : profile.sessions != null) {
             return false;
         }
-        if (version != null ? !version.equals(profile.version) : profile.version != null) {
-            return false;
-        }
-
-        {
-            return true;
-        }
+        return !(version != null ? !version.equals(profile.version) : profile.version != null);
     }
 
     @Override

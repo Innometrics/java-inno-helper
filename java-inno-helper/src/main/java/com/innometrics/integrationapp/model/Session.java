@@ -21,6 +21,10 @@ public class Session  extends Dirty {
         return id;
     }
 
+    public Session() {
+        // need default constructor
+    }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -81,8 +85,8 @@ public class Session  extends Dirty {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
         Session session = (Session) o;
         return collectApp.equals(session.collectApp) && createdAt.equals(session.createdAt) &&
                 !(data != null ? !data.equals(session.data) : session.data != null) &&

@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Logger;
 
 import static com.innometrics.integrationapp.constants.Resources.*;
 import static com.innometrics.integrationapp.utils.InnoHelperUtils.*;
