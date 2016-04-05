@@ -34,7 +34,7 @@ public class InnoHelper {
     private final URL hostWithVersion;
     private OkHttpClient httpClient = new OkHttpClient();
     private final ConcurrentMap<String, String> parameters = new ConcurrentHashMap<String, String>();
-    Logger logger = Logger.getLogger(InnoHelper.class);
+    private static final Logger logger = Logger.getLogger(InnoHelper.class);
     Set<AppConfigChangeListener> changeListeners = new HashSet<>();
     public static final String DEFAULT_PORT = "80";
     public static final String DEFAULT_TTL = "300";

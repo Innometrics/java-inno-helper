@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class RestURI {
     private final StringBuilder stringBuilder;
-    private static Logger LOGGER = Logger.getLogger(RestURI.class);
+    private static final Logger LOGGER = Logger.getLogger(RestURI.class);
 
     public RestURI(String hostWithVersion) {
         stringBuilder = new StringBuilder(hostWithVersion);

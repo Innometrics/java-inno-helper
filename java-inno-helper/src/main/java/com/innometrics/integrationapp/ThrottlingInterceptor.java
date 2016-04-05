@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ThrottlingInterceptor implements Interceptor {
     private long lastRequest = 0L;
     private final long maxRequestSpeed;
-    Logger logger = Logger.getLogger(ThrottlingInterceptor.class);
+    private static final Logger logger = Logger.getLogger(ThrottlingInterceptor.class);
     private final Lock requestLock = new ReentrantLock();
 
     public ThrottlingInterceptor(long maxRequestSpeed) {

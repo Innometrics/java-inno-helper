@@ -18,7 +18,7 @@ public class InnoHelperUtils {
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String ACCEPT = "Accept";
     static final Gson gson = initGson();
-    static Logger logger = Logger.getLogger(InnoHelperUtils.class);
+    private static final Logger logger = Logger.getLogger(InnoHelperUtils.class);
     private static final char[] chars = "1234567890abcdefghijklmnopqrstuvwxyz".toCharArray();
     // Added required cache params:
     public static final String CACHE_SIZE = "INNO_CACHE_SIZE";
