@@ -13,6 +13,7 @@ import com.innometrics.integrationapp.utils.SegmentUtil;
 import com.innometrics.iql.IqlResult;
 import com.innometrics.iql.IqlSyntaxException;
 import com.squareup.okhttp.*;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -33,6 +34,7 @@ public class InnoHelper {
     private final URL hostWithVersion;
     private OkHttpClient httpClient = new OkHttpClient();
     private final ConcurrentMap<String, String> parameters = new ConcurrentHashMap<String, String>();
+    Logger logger = Logger.getLogger(InnoHelper.class);
     Set<AppConfigChangeListener> changeListeners = new HashSet<>();
     public static final String DEFAULT_PORT = "80";
     public static final String DEFAULT_TTL = "300";
@@ -69,7 +71,8 @@ public class InnoHelper {
 
     String getOrError(Map<String, String> config, String field) {
         if (!config.containsKey(field)) {
-            throw new IllegalArgumentException("In the settings missing a required field " + field);
+            logger.error("In the settings missing a required field " + field);
+            return null;
         } else return config.get(field);
     }
 
@@ -78,7 +81,7 @@ public class InnoHelper {
         long getConfigTimeOut = 10_000;
         if (lastGetConfigTime + getConfigTimeOut < System.currentTimeMillis()) {
             App tempApp = null;
-                tempApp = getObjectSync(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(apps, appID), App.class);
+            tempApp = getObjectSync(new RestURI(hostWithVersion).withResource(companies, companyId).withResource(buckets, bucketId).withResource(apps, appID), App.class);
             if (!(tempApp != null && tempApp.equals(app))) {
                 app = tempApp;
                 for (AppConfigChangeListener changeListener : changeListeners) {
@@ -98,13 +101,13 @@ public class InnoHelper {
         T result = null;
         if (response.isSuccessful()) {
             JsonObject container = null;
-                container = (JsonObject) jsonParser.parse(response.body().string());
+            container = (JsonObject) jsonParser.parse(response.body().string());
             String fieldName = aClass.getSimpleName().toLowerCase();
             if (container != null && container.has(fieldName)) {
                 result = InnoHelperUtils.getGson().fromJson(container.get(fieldName), aClass);
             }
         } else {
-            System.err.println("http error :" + response.code() + " [" + response.message() + "]");
+            logger.error("http error :" + response.code() + " [" + response.message() + "]");
         }
         return result;
     }
@@ -115,22 +118,23 @@ public class InnoHelper {
 
     private <T> T getObjectSync(RestURI restURI, Class<T> tClass) throws IOException {
         URL endpoint = null;
-            endpoint = build(restURI);
-            Request request = new Request.Builder().url(endpoint).get().build();
-            Call call = httpClient.newCall(request);
-            Response response = call.execute();
-            return processResponse(response, tClass);
+        endpoint = build(restURI);
+        Request request = new Request.Builder().url(endpoint).get().build();
+        Call call = httpClient.newCall(request);
+        Response response = call.execute();
+        return processResponse(response, tClass);
     }
 
     private Response postObjectSync(RestURI url, Object toUpdate) throws IOException {
         if (toUpdate != null) {
             URL endpoint = null;
-                endpoint = build(url);
-                RequestBody requestBody = RequestBody.create(JSON, InnoHelperUtils.getGson().toJson(toUpdate));
-                Request request = new Request.Builder().url(endpoint).post(requestBody).build();
-                return httpClient.newCall(request).execute();
+            endpoint = build(url);
+            RequestBody requestBody = RequestBody.create(JSON, InnoHelperUtils.getGson().toJson(toUpdate));
+            Request request = new Request.Builder().url(endpoint).post(requestBody).build();
+            return httpClient.newCall(request).execute();
         } else {
-            throw new UnsupportedOperationException("POST operation does not support NULL!");
+            logger.error("POST operation does not support NULL!");
+            return null;
         }
     }
 
@@ -167,7 +171,7 @@ public class InnoHelper {
 
     public IqlResult[] evaluateProfile(String profileId, boolean doFiltering) throws IOException, IqlSyntaxException {
         Segment[] segments = new Segment[0];
-            segments = getSegments();
+        segments = getSegments();
         if (segments.length > 0) {
             Profile toEvaluate = getProfile(profileId);
             IqlResult[] toReturn = new IqlResult[segments.length];

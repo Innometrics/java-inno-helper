@@ -4,13 +4,13 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.innometrics.integrationapp.model.*;
 import org.apache.commons.lang3.text.StrBuilder;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.*;
-import java.util.logging.Logger;
 
 
 public class InnoHelperUtils {
@@ -18,7 +18,7 @@ public class InnoHelperUtils {
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String ACCEPT = "Accept";
     static final Gson gson = initGson();
-//    static Logger logger = Logger.getLogger(InnoHelperUtils.class.getName());
+    static Logger logger = Logger.getLogger(InnoHelperUtils.class);
     private static final char[] chars = "1234567890abcdefghijklmnopqrstuvwxyz".toCharArray();
     // Added required cache params:
     public static final String CACHE_SIZE = "INNO_CACHE_SIZE";
@@ -78,7 +78,7 @@ public class InnoHelperUtils {
         try {
             properties.load(url.openStream());
         } catch (IOException e) {
-            throw  new IllegalArgumentException("default.properties not found");
+            logger.error("default.properties not found");
         }
         for (ConfigNames configName : ConfigNames.values()) {
             String res = System.getenv(configName.name());

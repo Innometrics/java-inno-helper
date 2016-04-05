@@ -2,6 +2,7 @@ package com.innometrics.integrationapp.utils;
 
 
 import com.innometrics.integrationapp.constants.Resources;
+import org.apache.log4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -15,6 +16,7 @@ import java.util.Map;
  */
 public class RestURI {
     private final StringBuilder stringBuilder;
+    private static Logger LOGGER = Logger.getLogger(RestURI.class);
 
     public RestURI(String hostWithVersion) {
         stringBuilder = new StringBuilder(hostWithVersion);
@@ -38,7 +40,7 @@ public class RestURI {
         try {
             return URLEncoder.encode(input, Charset.defaultCharset().name());
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            LOGGER.error("Invalid encoding",e);
         }
         return null;
     }
@@ -53,7 +55,6 @@ public class RestURI {
         }
         return new URL(stringBuilder.toString());
     }
-
 
 
     @Override
