@@ -34,7 +34,7 @@ public class InnoHelper {
     private final URL hostWithVersion;
     private OkHttpClient httpClient = new OkHttpClient();
     private final ConcurrentMap<String, String> parameters = new ConcurrentHashMap<String, String>();
-    private static final Logger logger = Logger.getLogger(InnoHelper.class);
+    private static final Logger LOGGER = Logger.getLogger(InnoHelper.class);
     Set<AppConfigChangeListener> changeListeners = new HashSet<>();
     public static final String DEFAULT_PORT = "80";
     public static final String DEFAULT_TTL = "300";
@@ -71,7 +71,7 @@ public class InnoHelper {
 
     String getOrError(Map<String, String> config, String field) {
         if (!config.containsKey(field)) {
-            logger.error("In the settings missing a required field " + field);
+            LOGGER.error("In the settings missing a required field " + field);
             return null;
         } else return config.get(field);
     }
@@ -107,7 +107,7 @@ public class InnoHelper {
                 result = InnoHelperUtils.getGson().fromJson(container.get(fieldName), aClass);
             }
         } else {
-            logger.error("http error :" + response.code() + " [" + response.message() + "]");
+            LOGGER.error("http error :" + response.code() + " [" + response.message() + "]");
         }
         return result;
     }
@@ -133,7 +133,7 @@ public class InnoHelper {
             Request request = new Request.Builder().url(endpoint).post(requestBody).build();
             return httpClient.newCall(request).execute();
         } else {
-            logger.error("POST operation does not support NULL!");
+            LOGGER.error("POST operation does not support NULL!");
             return null;
         }
     }

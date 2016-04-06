@@ -18,7 +18,7 @@ public class InnoHelperUtils {
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String ACCEPT = "Accept";
     static final Gson gson = initGson();
-    private static final Logger logger = Logger.getLogger(InnoHelperUtils.class);
+    private static final Logger LOGGER = Logger.getLogger(InnoHelperUtils.class);
     private static final char[] chars = "1234567890abcdefghijklmnopqrstuvwxyz".toCharArray();
     // Added required cache params:
     public static final String CACHE_SIZE = "INNO_CACHE_SIZE";
@@ -78,7 +78,7 @@ public class InnoHelperUtils {
         try {
             properties.load(url.openStream());
         } catch (IOException e) {
-            logger.error("default.properties not found");
+            LOGGER.error("default.properties not found");
         }
         for (ConfigNames configName : ConfigNames.values()) {
             String res = System.getenv(configName.name());
