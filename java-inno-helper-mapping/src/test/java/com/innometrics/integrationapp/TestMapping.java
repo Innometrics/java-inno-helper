@@ -75,12 +75,12 @@ public class TestMapping {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        Map<String, Object> stringObjectMap = innoTransformer.fromProfileStream(new ProfileStreamMessage(profile));
-                        Assert.assertEquals("TestValue", stringObjectMap.get("test"));
-                    } catch (MappingDataException e) {
-                        e.printStackTrace();
-                    }
+//                    try {
+//                        Map<String, Object> stringObjectMap = innoTransformer.fromProfileStream(new ProfileStreamMessage(profile));
+//                        Assert.assertEquals("TestValue", stringObjectMap.get("test"));
+//                    } catch (MappingDataException e) {
+//                        e.printStackTrace();
+//                    }
                 }
             }).start();
         }

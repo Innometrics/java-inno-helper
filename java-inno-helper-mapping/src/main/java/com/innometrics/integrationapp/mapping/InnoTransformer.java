@@ -1,7 +1,6 @@
 package com.innometrics.integrationapp.mapping;
 
 
-import com.google.gson.JsonPrimitive;
 import com.innometrics.integrationapp.InnoHelper;
 import com.innometrics.integrationapp.appsettings.FieldSetsEntry;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
@@ -18,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InnoTransformer {
     public static final String RULES = "rules";
     public static final String MAPPING_SET_NAME = "mapping";
-    public static final String USER_AGENT = "User-Agent";
     Map<String, RulesEntry> rulesEntries = new ConcurrentHashMap<>();
     InnoHelper innoHelper;
 
@@ -42,13 +40,13 @@ public class InnoTransformer {
                 String stringType = field.getType();
                 if (!stringType.isEmpty()) {
                     DataLevel type = DataLevel.valueOf(stringType.toUpperCase());
-
                     result.put(field.getFieldName(), type.getAdapter().getValueFromPS(profileStreamMessage,field));
                 }
             }
         }
         return result;
     }
+
 //    public Profile toProfile(Map<String, Object> map, String entryName) {
 //        for (RulesEntry entry : rulesEntries.values()) {
 //            if (entry != null && entry.getName().equals(entryName)) {
@@ -76,9 +74,6 @@ public class InnoTransformer {
         }
         return new ArrayList<>();
     }
-
-
-
 //    private Profile getProfileBySetEntry(Map<String, Object> map, FieldSetsEntry setsEntry) {
 //        Profile profile = new Profile();
 //        Session session = new Session();
@@ -152,130 +147,6 @@ public class InnoTransformer {
         }
         return res;
     }
-
-
-//    public Object getValue(ProfileStreamMessage profileStreamMessage, FieldsEntry fieldsEntry) throws MappingDataException {
-//        Profile profile = profileStreamMessage.getProfile();
-//        Object result = null;
-//        String stringType = fieldsEntry.getType();
-//        if (stringType == null || stringType.isEmpty()) return null;
-//        DataLevel type = DataLevel.valueOf(stringType.toUpperCase());
-//        Session session = profile.getSessions().get(0);
-//        String valueRef = fieldsEntry.getValueRef();
-//        switch (type) {
-//            case EVENT_DATA: {
-//                result = getObject(session, valueRef);
-//                break;
-//            }
-//            case SESSION_DATA: {
-//                result = getSessionData(session, valueRef);
-//                break;
-//            }
-//            case ATTRIBUTE_DATA: {
-//                result = getAttributeData(profile,  valueRef);
-//                break;
-//            }
-//            case STATIC: {
-//                result = fieldsEntry.getValueRef();
-//                break;
-//            }
-//            case PROFILE_ID: {
-//                result = profile.getId();
-//                break;
-//            }
-//            case PROFILE_CREATED: {
-//                result = profile.getCreatedAt().toString();
-//                break;
-//            }
-//            case SESSION_CREATED: {
-//                result = session.getCreatedAt().toString();
-//                break;
-//            }
-//            case SESSION_ID: {
-//                result = session.getId();
-//                break;
-//            }
-//            case EVENT_CREATED: {
-//                result = session.getEvents().get(0).getCreatedAt();
-//                break;
-//            }
-//            case EVENT_ID: {
-//                result = session.getEvents().get(0).getId();
-//                break;
-//            }
-//            case EVENT_DEFINITION: {
-//                result = session.getEvents().get(0).getDefinitionId();
-//                break;
-//            }
-//            case MACRO: {
-//                result = getMacro(profileStreamMessage, fieldsEntry.getValueRef());
-//                break;
-//            }
-//            case META: {
-//                result = getMeta(profile, fieldsEntry.getValueRef());
-//                break;
-//            }
-//        }
-//        return convertValue(result, fieldsEntry);
-//    }
-//
-//    private Object getAttributeData(Profile profile,  String valueRef) {
-//        String[] tmp = valueRef.split("/");
-//        for (Attribute attribute : profile.getAttributes()) {
-//            if (attribute.getCollectApp().equals(tmp[0]) && attribute.getSection().equals(tmp[1])) {
-//                return attribute.getData().get(tmp[2]);
-//            }
-//        }
-//        return null;
-//    }
-//
-//    private Object getSessionData(Session session, String valueRef) throws MappingDataException {
-//        Object result;
-//        if (session.getData() != null && session.getData().containsKey(valueRef)) {
-//            result = session.getData().get(valueRef);
-//        } else throw new MappingDataException("SessionData/" + valueRef);
-//        return result;
-//    }
-
-
-
-//    private Object getMacro(ProfileStreamMessage profileStreamMessage, String valueRef) {
-//        Macro macro = Macro.valueOf(valueRef.toUpperCase());
-//        switch (macro) {
-//            case CURRENT_TIMESTAMP: {
-//                return System.currentTimeMillis();
-//            }
-//            case REQUEST_IP: {
-//                if (profileStreamMessage.getMeta() != null)
-//                    return profileStreamMessage.getMeta().getRequestMeta().getRequestIp();
-//            }
-//            case USER_AGENT: {
-//                if (profileStreamMessage.getMeta() != null)
-//                    return profileStreamMessage.getMeta().getRequestMeta().getHeaders().get(USER_AGENT);
-//            }
-//        }
-//        return null;
-//    }
-//
-//    private Object getMeta(Profile profile, String valueRef) {
-//        MetaConstant metaConstant = MetaConstant.valueOf(valueRef.toUpperCase());
-//        switch (metaConstant) {
-//            case BUCKET_ID: {
-//                return innoHelper.getBucketId();
-//            }
-//            case COMPANY_ID: {
-//                return innoHelper.getCompanyId();
-//            }
-//            case COLLECTAPP: {
-//                return profile.getSessions().get(0).getCollectApp();
-//            }
-//            case SECTION: {
-//                return profile.getSessions().get(0).getSection();
-//            }
-//        }
-//        return null;
-//    }
-
 
 
 }

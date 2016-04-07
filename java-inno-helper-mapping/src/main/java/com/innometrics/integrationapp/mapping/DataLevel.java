@@ -57,25 +57,25 @@ public enum DataLevel {
     EVENT_ID {
         @Override
         InnAdapter getAdapter() {
-            return null;
+            return new EventIDAdapter();
         }
     },
     SESSION_ID {
         @Override
         InnAdapter getAdapter() {
-            return null;
+            return new SessionIDAdapter();
         }
     },
     EVENT_DEFINITION {
         @Override
         InnAdapter getAdapter() {
-            return null;
+            return new EventDefinitionAdapter();
         }
     },
     MACRO {
         @Override
         InnAdapter getAdapter() {
-            return null;
+            return new MacroAdapter();
         }
     },
     META {
