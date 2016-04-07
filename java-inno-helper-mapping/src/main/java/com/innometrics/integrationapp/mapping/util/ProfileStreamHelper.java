@@ -22,7 +22,7 @@ public class ProfileStreamHelper {
 
     public  Session getSession(ProfileStreamMessage profileStreamMessage) throws MappingDataException {
         List<Session> sessions = getProfile(profileStreamMessage).getSessions();
-        if (sessions == null || sessions.size() == 0) {
+        if (sessions == null || sessions.isEmpty()) {
             throw new MappingDataException("ProfileStream not contain session");
         }
         Session session = sessions.get(0);
@@ -34,7 +34,7 @@ public class ProfileStreamHelper {
 
     public Event getEvent(ProfileStreamMessage profileStreamMessage) throws MappingDataException {
         List<Event> events = getSession(profileStreamMessage).getEvents();
-        if (events == null || events.size() == 0) {
+        if (events == null || events.isEmpty()) {
             throw new MappingDataException("ProfileStream not contain ecent");
         }
         Event event = events.get(0);

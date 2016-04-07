@@ -1,6 +1,8 @@
-package com.innometrics.integrationapp.mapping;
+package com.innometrics.integrationapp.mapping.adapters;
 
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
+import com.innometrics.integrationapp.mapping.ConvertType;
+import com.innometrics.integrationapp.mapping.MappingDataException;
 import com.innometrics.integrationapp.mapping.util.ProfileStreamHelper;
 import com.innometrics.integrationapp.model.ProfileStreamMessage;
 
@@ -12,9 +14,9 @@ import java.util.Map;
 public abstract class InnAdapter {
     public ProfileStreamHelper profileStreamHelper = new ProfileStreamHelper();
 
-    abstract public Object getValueFromPS(ProfileStreamMessage profileStreamMessage, FieldsEntry fieldsEntry) throws MappingDataException;
+    public abstract Object getValueFromPS(ProfileStreamMessage profileStreamMessage, FieldsEntry fieldsEntry) throws MappingDataException;
 
-    abstract public void setValueToProfile();
+    public abstract void setValueToProfile();
 
     public String getValueRef(FieldsEntry fieldsEntry) throws MappingDataException {
         String valueRef = fieldsEntry.getValueRef();
@@ -26,9 +28,11 @@ public abstract class InnAdapter {
 
 
     protected Object convertValue(Object value, FieldsEntry fieldsEntry) {
-        if (value == null || value.equals("null")) return null;
+        if (value == null || "null".equals(value)) {
+            return null;
+        }
         ConvertType type = ConvertType.STRING;
-        Map<String, Object> settings = null;
+        Map<String, Object> settings;
         if (fieldsEntry != null && fieldsEntry.getFieldSettings() != null) {
             settings = fieldsEntry.getFieldSettings();
             type = ConvertType.valueOf(String.valueOf(settings.get("convertType")).toUpperCase());

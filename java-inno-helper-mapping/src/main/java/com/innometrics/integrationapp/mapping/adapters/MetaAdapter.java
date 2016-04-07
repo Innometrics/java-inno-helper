@@ -1,7 +1,6 @@
 package com.innometrics.integrationapp.mapping.adapters;
 
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
-import com.innometrics.integrationapp.mapping.InnAdapter;
 import com.innometrics.integrationapp.mapping.Macro;
 import com.innometrics.integrationapp.mapping.MappingDataException;
 import com.innometrics.integrationapp.mapping.MetaConstant;

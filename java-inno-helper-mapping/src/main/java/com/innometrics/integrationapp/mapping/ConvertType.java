@@ -8,35 +8,35 @@ import com.innometrics.integrationapp.mapping.converter.*;
 public enum ConvertType {
     STRING {
         @Override
-        InnConverter getConverter() {
+        public InnConverter getConverter() {
             return new StringConverter();
         }
     },INTEGER {
         @Override
-        InnConverter getConverter() {
+        public InnConverter getConverter() {
             return new IntegerConverter();
         }
     },DOUBLE {
         @Override
-        InnConverter getConverter() {
+        public InnConverter getConverter() {
             return new DoubleConverter();
         }
     }, DATE {
         @Override
-        InnConverter getConverter() {
+        public InnConverter getConverter() {
             return new DateConverter();
         }
     }, TIMESTAMP {
         @Override
-        InnConverter getConverter() {
+        public InnConverter getConverter() {
             return new TimeStampConverter();
         }
     }, JSON {
         @Override
-        InnConverter getConverter() {
+        public InnConverter getConverter() {
             return new JsonConverter();
         }
     };
 
-    abstract InnConverter getConverter();
+    public abstract  InnConverter getConverter();
 }
