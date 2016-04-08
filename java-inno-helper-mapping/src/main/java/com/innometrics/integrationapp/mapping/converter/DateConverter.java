@@ -3,7 +3,6 @@ package com.innometrics.integrationapp.mapping.converter;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -24,7 +23,7 @@ public class DateConverter extends TimeStampConverter {
         try {
             return parceDate(tmp, format);
         } catch (ParseException e) {
-            e.printStackTrace();
+            logger.error("to date conversion error ",e);
         }
         return null;
     }

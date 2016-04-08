@@ -12,10 +12,11 @@ import com.innometrics.integrationapp.model.ProfileStreamMessage;
  */
 public class MetaAdapter extends InnAdapter {
 
+    public static final String INCORRECT_META_SETTINGS = "Incorrect Meta settings";
+
     @Override
     public Object getValueFromPS(ProfileStreamMessage profileStreamMessage, FieldsEntry fieldsEntry) throws MappingDataException {
-        Macro macro = Macro.valueOf(getValueRef(fieldsEntry).toUpperCase());
-        Object res = null;
+        Object res ;
         MetaConstant metaConstant = MetaConstant.valueOf(getValueRef(fieldsEntry).toUpperCase());
         switch (metaConstant) {
             case BUCKET_ID: {
@@ -34,7 +35,7 @@ public class MetaAdapter extends InnAdapter {
                 return profileStreamHelper.getSession(profileStreamMessage).getSection();
             }
             default: {
-                throw new IllegalArgumentException("Incorrect Meta settings");
+                throw new IllegalArgumentException(INCORRECT_META_SETTINGS);
             }
         }
         return convertValue(res, fieldsEntry);

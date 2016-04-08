@@ -6,6 +6,7 @@ import com.innometrics.integrationapp.mapping.ConvertType;
 import com.innometrics.integrationapp.mapping.MappingDataException;
 import com.innometrics.integrationapp.mapping.util.ProfileStreamHelper;
 import com.innometrics.integrationapp.model.ProfileStreamMessage;
+import org.apache.log4j.Logger;
 
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import java.util.Map;
  * Created by killpack on 06.04.16.
  */
 public abstract class InnAdapter {
+    Logger logger = Logger.getLogger(InnoHelper.class);
     InnoHelper innoHelper;
     public ProfileStreamHelper profileStreamHelper = new ProfileStreamHelper();
 
