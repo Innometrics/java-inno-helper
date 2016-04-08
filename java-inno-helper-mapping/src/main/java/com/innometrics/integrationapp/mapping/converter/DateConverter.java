@@ -9,23 +9,23 @@ import java.util.Date;
 /**
  * Created by killpack on 07.04.16.
  */
-public class DateConverter extends InnConverter {
+public class DateConverter extends TimeStampConverter {
 
     @Override
-    public Date convertValue(Object value, FieldsEntry fieldsEntry) {
-        if (value instanceof Date) return (Date) value;
-        if (value instanceof Long) return new Date((Long) value);
+    public Object convertValue(Object value, FieldsEntry fieldsEntry) {
+        if (value instanceof Date) {
+            return value;
+        }
+        if (value instanceof Long) {
+            return new Date((Long) value);
+        }
         String tmp = getAssString(value);
         String format = String.valueOf(fieldsEntry.getFieldSettings().get("timeFormat"));
-        if (format == null || format.isEmpty()) {
-            throw new IllegalArgumentException("");//todo set Exception massage
-        }
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
         try {
-            return simpleDateFormat.parse(tmp);
+            return parceDate(tmp, format);
         } catch (ParseException e) {
             e.printStackTrace();
-            return null;
         }
+        return null;
     }
 }

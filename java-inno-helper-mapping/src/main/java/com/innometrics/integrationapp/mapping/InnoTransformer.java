@@ -5,9 +5,11 @@ import com.innometrics.integrationapp.InnoHelper;
 import com.innometrics.integrationapp.appsettings.FieldSetsEntry;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
+import com.innometrics.integrationapp.mapping.adapters.InnAdapter;
 import com.innometrics.integrationapp.model.*;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,9 +22,9 @@ public class InnoTransformer {
     Map<String, RulesEntry> rulesEntries = new ConcurrentHashMap<>();
     InnoHelper innoHelper;
 
-    public InnoTransformer(InnoHelper innoHelper) throws Exception {
+    public InnoTransformer(InnoHelper innoHelper) throws IOException {
         this.innoHelper = innoHelper;
-        RulesEntry[] rulesEntries = innoHelper.getCustom(RULES, RulesEntry[].class);
+        RulesEntry[] rulesEntries = this.innoHelper.getCustom(RULES, RulesEntry[].class);
         for (RulesEntry rulesEntry : rulesEntries) {
             this.rulesEntries.put(rulesEntry.getEvent(), rulesEntry);
         }
@@ -40,7 +42,9 @@ public class InnoTransformer {
                 String stringType = field.getType();
                 if (!stringType.isEmpty()) {
                     DataLevel type = DataLevel.valueOf(stringType.toUpperCase());
-                    result.put(field.getFieldName(), type.getAdapter().getValueFromPS(profileStreamMessage,field));
+                    InnAdapter adapter = type.getAdapter();
+                    adapter.setInnoHelper(innoHelper);
+                    result.put(field.getFieldName(), adapter.getValueFromPS(profileStreamMessage, field));
                 }
             }
         }

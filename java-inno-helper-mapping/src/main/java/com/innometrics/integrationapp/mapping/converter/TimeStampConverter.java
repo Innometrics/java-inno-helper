@@ -12,20 +12,33 @@ import java.util.Date;
 public class TimeStampConverter extends InnConverter {
 
     @Override
-    public Long convertValue(Object value, FieldsEntry fieldsEntry) {
-        if (value instanceof Long) return (Long) value;
-        if (value instanceof Date) return ((Date) value).getTime();
+    public Object convertValue(Object value, FieldsEntry fieldsEntry) {
+        if (value instanceof Long) {
+            return (Long) value;
+        }
+        if (value instanceof Date) {
+            return ((Date) value).getTime();
+        }
         String tmp = getAssString(value);
-        if (fieldsEntry.getFieldSettings().isEmpty()) return Long.valueOf(tmp);
+        if (fieldsEntry.getFieldSettings().isEmpty()) {
+            return Long.valueOf(tmp);
+        }
         String format = String.valueOf(fieldsEntry.getFieldSettings().get("timeFormat"));
+        if (value instanceof String) {
+            try {
+                return parceDate((String) value, format).getTime();
+            } catch (ParseException e) {
+                return Long.valueOf(tmp);
+            }
+        }
+        return null;
+    }
+
+     Date parceDate(String date, String format) throws ParseException {
         if (format == null || format.isEmpty()) {
             throw new IllegalArgumentException(""); //todo
         }
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
-        try {
-            return simpleDateFormat.parse(tmp).getTime();
-        } catch (ParseException e) {
-            return Long.valueOf(tmp);
-        }
+        return simpleDateFormat.parse(date);
     }
 }

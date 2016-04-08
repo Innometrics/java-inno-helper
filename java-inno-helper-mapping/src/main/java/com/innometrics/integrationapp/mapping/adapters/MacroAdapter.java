@@ -18,15 +18,19 @@ public class MacroAdapter extends InnAdapter {
         Object res = null;
         switch (macro) {
             case CURRENT_TIMESTAMP: {
-                res =  System.currentTimeMillis();
+                res = System.currentTimeMillis();
+                break;
             }
             case REQUEST_IP: {
-                if (profileStreamMessage.getMeta() != null)
-                   res =  profileStreamMessage.getMeta().getRequestMeta().getRequestIp();
+                res = profileStreamMessage.getMeta().getRequestMeta().getRequestIp();
+                break;
             }
             case USER_AGENT: {
-                if (profileStreamMessage.getMeta() != null)
-                    return profileStreamMessage.getMeta().getRequestMeta().getHeaders().get(USER_AGENT);
+                res = profileStreamMessage.getMeta().getRequestMeta().getHeaders().get(USER_AGENT);
+                break;
+            }
+            default: {
+                throw new IllegalArgumentException("Incorrect Macro settings");
             }
         }
         return convertValue(res, fieldsEntry);
@@ -34,6 +38,7 @@ public class MacroAdapter extends InnAdapter {
 
     @Override
     public void setValueToProfile() {
+        //plaseholder for set value to profile
 
     }
 

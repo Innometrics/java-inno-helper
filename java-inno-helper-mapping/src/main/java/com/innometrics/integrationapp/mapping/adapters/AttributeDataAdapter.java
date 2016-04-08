@@ -20,30 +20,30 @@ public class AttributeDataAdapter extends InnAdapter {
         if (attributes == null || attributes.isEmpty()) {
             throw new MappingDataException("Profile not Contein Attributes");
         }
-        //todo сделать проверку  ValueRef
         Attribute result = null;
-
         for (Attribute attribute : attributes) {
             if (attribute.getCollectApp().equals(tmp[0]) && attribute.getSection().equals(tmp[1])) {
                 result =attribute;
             }
         }
-        if (result==null ){
-            throw new MappingDataException("Profile not contein attribute  with collectApp "+tmp[0]+" and section "+ tmp[1]);
-        }
-        if (result.getData()==null){
-            throw new MappingDataException("Profile not contein data in attribute with collectApp "+tmp[0]+" and section "+ tmp[1]);
-        }
-        if (result.getData().isEmpty() || result.getData().containsKey(tmp[2])){
-            throw new MappingDataException("Profile not contein data wth name "+tmp[2]+"in attribute with collectApp "+tmp[0]+" and section "+ tmp[1]);
-        }
+        validateAttribute(result,tmp);
         return convertValue(result.getData().get(tmp[2]), fieldsEntry);
+    }
+
+    private void validateAttribute(Attribute attribute,String[] valueRef) throws MappingDataException {
+        if (attribute==null ){
+            throw new MappingDataException("Profile not contein attribute  with collectApp "+valueRef[0]+" and section "+ valueRef[1]);
+        }
+        if (attribute.getData()==null){
+            throw new MappingDataException("Profile not contein data in attribute with collectApp "+valueRef[0]+" and section "+ valueRef[1]);
+        }
+        if (attribute.getData().isEmpty() || attribute.getData().containsKey(valueRef[2])){
+            throw new MappingDataException("Profile not contein data wth name "+valueRef[2]+"in attribute with collectApp "+valueRef[0]+" and section "+ valueRef[1]);
+        }
     }
 
     @Override
     public void setValueToProfile() {
-
+        //plaseholder for set value to profile
     }
-
-
 }

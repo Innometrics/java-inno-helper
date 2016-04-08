@@ -19,17 +19,22 @@ public class MetaAdapter extends InnAdapter {
         MetaConstant metaConstant = MetaConstant.valueOf(getValueRef(fieldsEntry).toUpperCase());
         switch (metaConstant) {
             case BUCKET_ID: {
-//                return innoHelper.getBucketId();
+                res = innoHelper.getBucketId();
+                break;
             }
             case COMPANY_ID: {
-//                return innoHelper.getCompanyId();
-                //todo
+                res = innoHelper.getCompanyId();
+                break;
             }
             case COLLECTAPP: {
-                return profileStreamHelper.getSession(profileStreamMessage).getCollectApp();
+                res = profileStreamHelper.getSession(profileStreamMessage).getCollectApp();
+                break;
             }
             case SECTION: {
                 return profileStreamHelper.getSession(profileStreamMessage).getSection();
+            }
+            default: {
+                throw new IllegalArgumentException("Incorrect Meta settings");
             }
         }
         return convertValue(res, fieldsEntry);
@@ -37,6 +42,7 @@ public class MetaAdapter extends InnAdapter {
 
     @Override
     public void setValueToProfile() {
+        //plaseholder for set value to profile
 
     }
 

@@ -17,6 +17,7 @@ public class ProfileCreatedAdapter extends InnAdapter {
 
     @Override
     public void setValueToProfile() {
+        //plaseholder for set value to profile
 
     }
 
