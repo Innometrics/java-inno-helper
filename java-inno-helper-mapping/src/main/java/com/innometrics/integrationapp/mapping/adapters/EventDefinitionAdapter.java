@@ -5,7 +5,6 @@ import com.innometrics.integrationapp.mapping.MappingDataException;
 import com.innometrics.integrationapp.model.Profile;
 import com.innometrics.integrationapp.model.ProfileStreamMessage;
 
-import java.time.temporal.ValueRange;
 import java.util.Map;
 
 
