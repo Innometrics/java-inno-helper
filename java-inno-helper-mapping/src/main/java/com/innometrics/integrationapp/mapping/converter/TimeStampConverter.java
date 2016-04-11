@@ -14,7 +14,7 @@ public class TimeStampConverter extends InnConverter {
     @Override
     public Object convertValue(Object value, FieldsEntry fieldsEntry) {
         if (value instanceof Long) {
-            return (Long) value;
+            return  value;
         }
         if (value instanceof Date) {
             return ((Date) value).getTime();
@@ -36,7 +36,7 @@ public class TimeStampConverter extends InnConverter {
 
      Date parceDate(String date, String format) throws ParseException {
         if (format == null || format.isEmpty()) {
-            throw new IllegalArgumentException(""); //todo
+            throw new IllegalArgumentException("time format mast not be empty");
         }
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
         return simpleDateFormat.parse(date);

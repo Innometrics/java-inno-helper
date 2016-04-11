@@ -1,13 +1,10 @@
 package com.innometrics.integrationapp.mapping.adapters;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
 import com.innometrics.integrationapp.mapping.MappingDataException;
 import com.innometrics.integrationapp.model.Attribute;
 import com.innometrics.integrationapp.model.Profile;
 import com.innometrics.integrationapp.model.ProfileStreamMessage;
-import com.innometrics.integrationapp.utils.InnoHelperUtils;
 
 import java.util.List;
 import java.util.Map;
