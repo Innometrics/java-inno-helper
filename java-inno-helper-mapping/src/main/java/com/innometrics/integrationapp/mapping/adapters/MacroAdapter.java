@@ -3,7 +3,10 @@ package com.innometrics.integrationapp.mapping.adapters;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
 import com.innometrics.integrationapp.mapping.Macro;
 import com.innometrics.integrationapp.mapping.MappingDataException;
+import com.innometrics.integrationapp.model.Profile;
 import com.innometrics.integrationapp.model.ProfileStreamMessage;
+
+import java.util.Map;
 
 
 /**
@@ -37,9 +40,8 @@ public class MacroAdapter extends InnAdapter {
     }
 
     @Override
-    public void setValueToProfile() {
+    public void setValueToProfile(Profile profile, FieldsEntry fieldsEntry, Map<String, Object> map) {
         //plaseholder for set value to profile
-
     }
 
 }

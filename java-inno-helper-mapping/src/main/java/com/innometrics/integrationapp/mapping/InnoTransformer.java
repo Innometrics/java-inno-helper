@@ -51,23 +51,23 @@ public class InnoTransformer {
         return result;
     }
 
-//    public Profile toProfile(Map<String, Object> map, String entryName) {
-//        for (RulesEntry entry : rulesEntries.values()) {
-//            if (entry != null && entry.getName().equals(entryName)) {
-//                return getProfile(map, entry);
-//            }
-//        }
-//        return null;
-//    }
-//
-//    private Profile getProfile(Map<String, Object> map, RulesEntry rulesEntry) {
-//        for (FieldSetsEntry setsEntry : rulesEntry.getFieldSets()) {
-//            if (MAPPING_SET_NAME.equals(setsEntry.getSetName())) {
-//                return getProfileBySetEntry(map, setsEntry);
-//            }
-//        }
-//        return null;
-//    }
+    public Profile toProfile(Map<String, Object> map, String entryName) throws MappingDataException {
+        for (RulesEntry entry : rulesEntries.values()) {
+            if (entry != null && entry.getName().equals(entryName)) {
+                return getProfile(map, entry);
+            }
+        }
+        return null;
+    }
+
+    private Profile getProfile(Map<String, Object> map, RulesEntry rulesEntry) throws MappingDataException {
+        for (FieldSetsEntry setsEntry : rulesEntry.getFieldSets()) {
+            if (MAPPING_SET_NAME.equals(setsEntry.getSetName())) {
+                return getProfileBySetEntry(map, setsEntry);
+            }
+        }
+        return null;
+    }
 
     public List<FieldsEntry> getMapping(RulesEntry rulesEntry) {
         for (FieldSetsEntry fieldSet : rulesEntry.getFieldSets()) {
@@ -78,79 +78,23 @@ public class InnoTransformer {
         }
         return new ArrayList<>();
     }
-//    private Profile getProfileBySetEntry(Map<String, Object> map, FieldSetsEntry setsEntry) {
-//        Profile profile = new Profile();
-//        Session session = new Session();
-//        Event event = new Event();
-//        session.addEvent(event);
-//        profile.addSession(session);
-//        for (FieldsEntry fieldsEntry : setsEntry.getFields()) {
-//            fillProfileByEntry(profile, fieldsEntry, map);
-//        }
-//
-//        return profile;
-//    }
+    private Profile getProfileBySetEntry(Map<String, Object> map, FieldSetsEntry setsEntry) throws MappingDataException {
+        Profile profile = new Profile();
+        Session session = new Session();
+        Event event = new Event();
+        session.addEvent(event);
 
-//    void fillProfileByEntry(Profile profile, FieldsEntry fieldsEntry, Map<String, Object> map) {
-//        String type = fieldsEntry.getType();
-//        DataLevel dataLevel = DataLevel.valueOf(type.toUpperCase());
-//        if (dataLevel == null) {
-//            return;
-//        }
-//        Session session = profile.getSessions().get(0);
-//        Event event = session.getEvents().get(0);
-//        switch (dataLevel) {
-//            case PROFILE_ID: {
-//                profile.setId((String) convertValue(map.get(fieldsEntry.getFieldName()), fieldsEntry));
-//                break;
-//            }
-//            case ATTRIBUTE_DATA: {
-//                String[] valueRef = validateValueRef(fieldsEntry.getValueRef());
-//                profile.setAttribute(valueRef[0], valueRef[1], valueRef[2], InnoHelperUtils.getGson().toJsonTree(convertValue(map.get(fieldsEntry.getFieldName()), fieldsEntry)));
-//                break;
-//            }
-//            case EVENT_DATA: {
-//                String[] valueRef = validateValueRef(fieldsEntry.getValueRef());
-//                event.putData(valueRef[0], InnoHelperUtils.getGson().toJsonTree(convertValue(map.get(fieldsEntry.getFieldName()), fieldsEntry)));
-//                break;
-//            }
-//            case EVENT_DEFINITION: {
-//                event.setDefinitionId((String) convertValue(map.get(fieldsEntry.getFieldName()), fieldsEntry));
-//                break;
-//            }
-//            case SESSION_DATA: {
-//                String[] valueRef = validateValueRef(fieldsEntry.getValueRef());
-//                session.setCollectApp(valueRef[0]);
-//                session.setSection(valueRef[1]);
-//                session.putData(valueRef[2], InnoHelperUtils.getGson().toJsonTree(convertValue(map.get(fieldsEntry.getFieldName()), fieldsEntry)));
-//                break;
-//            }
-//            case SESSION_CREATED: {
-//                session.setCreatedAt((Date) map.get(fieldsEntry.getFieldName()));
-//                break;
-//            }
-//            case EVENT_CREATED: {
-//                event.setCreatedAt((Date) map.get(fieldsEntry.getFieldName()));
-//                break;
-//            }
-//            case PROFILE_CREATED: {
-//                profile.setCreatedAt((Date) map.get(fieldsEntry.getFieldName()));
-//                break;
-//            }
-//        }
-//    }
+        profile.addSession(session);
+        for (FieldsEntry fieldsEntry : setsEntry.getFields()) {
+            String stringType = fieldsEntry.getType();
+            if (!stringType.isEmpty()) {
+                DataLevel type = DataLevel.valueOf(stringType.toUpperCase());
+                InnAdapter adapter = type.getAdapter();
+                adapter.setValueToProfile(profile, fieldsEntry, map);
+            }
+        }
 
-    private String[] validateValueRef(String valueRef) {
-        if (valueRef == null || valueRef.isEmpty()) {
-            // todo
-            throw new IllegalArgumentException("");
-        }
-        String[] res = valueRef.split("/");
-        if (!(res.length == 3 || res.length == 1)) {
-            throw new IllegalArgumentException("");
-        }
-        return res;
+        return profile;
     }
-
 
 }

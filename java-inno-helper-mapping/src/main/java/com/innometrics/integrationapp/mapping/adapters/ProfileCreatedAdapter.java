@@ -2,7 +2,11 @@ package com.innometrics.integrationapp.mapping.adapters;
 
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
 import com.innometrics.integrationapp.mapping.MappingDataException;
+import com.innometrics.integrationapp.model.Profile;
 import com.innometrics.integrationapp.model.ProfileStreamMessage;
+
+import java.util.Date;
+import java.util.Map;
 
 
 /**
@@ -16,9 +20,13 @@ public class ProfileCreatedAdapter extends InnAdapter {
     }
 
     @Override
-    public void setValueToProfile() {
-        //plaseholder for set value to profile
-
+    public void setValueToProfile(Profile profile, FieldsEntry fieldsEntry, Map<String, Object> map) throws MappingDataException {
+        Object date = getValue(fieldsEntry, map);
+        if (date instanceof Date) {
+            profile.setCreatedAt((Date) date);
+        }else {
+            throw new MappingDataException("Profile createrdAt in field "+ fieldsEntry.getFieldName()+"must be DATE convert type");
+        }
     }
 
 

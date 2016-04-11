@@ -2,8 +2,11 @@ package com.innometrics.integrationapp.mapping.adapters;
 
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
 import com.innometrics.integrationapp.mapping.MappingDataException;
+import com.innometrics.integrationapp.model.Profile;
 import com.innometrics.integrationapp.model.ProfileStreamMessage;
 import com.innometrics.integrationapp.model.Session;
+
+import java.util.Map;
 
 
 /**
@@ -22,9 +25,8 @@ public class SessionDataAdapter extends InnAdapter {
     }
 
     @Override
-    public void setValueToProfile() {
-        //plaseholder for set value to profile
-
+    public void setValueToProfile(Profile profile, FieldsEntry fieldsEntry, Map<String, Object> map) throws MappingDataException {
+        profile.getSessions().get(0).getData().put(fieldsEntry.getValueRef(), getDataAsJson(getValue(fieldsEntry, map)));
     }
 
 
