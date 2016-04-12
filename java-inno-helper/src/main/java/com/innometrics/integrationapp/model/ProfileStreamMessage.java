@@ -24,4 +24,11 @@ public class ProfileStreamMessage {
         return profile;
     }
 
+    public void setProfile(Profile profile) {
+        this.profile = profile;
+    }
+
+    public void setMeta(Meta meta) {
+        this.meta = meta;
+    }
 }

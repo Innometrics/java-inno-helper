@@ -39,8 +39,8 @@ public class AttributeDataAdapter extends InnAdapter {
         if (attribute.getData() == null) {
             throw new MappingDataException("Profile not contein data in attribute with collectApp " + valueRef[0] + " and section " + valueRef[1]);
         }
-        if (attribute.getData().isEmpty() || attribute.getData().containsKey(valueRef[2])) {
-            throw new MappingDataException("Profile not contein data wth name " + valueRef[2] + "in attribute with collectApp " + valueRef[0] + " and section " + valueRef[1]);
+        if (attribute.getData().isEmpty() || !attribute.getData().containsKey(valueRef[2])) {
+            throw new MappingDataException("Profile not contein data wth name " + valueRef[2] + " in attribute with collectApp " + valueRef[0] + " and section " + valueRef[1]);
         }
     }
 

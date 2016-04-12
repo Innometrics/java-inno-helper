@@ -11,36 +11,61 @@
         "fields": [
           {
             "fieldName": "profId",
-            "type": "profile_id"
+            "type": "profile_id",
+            "fieldSettings": {
+              "convertType": "string"
+            }
           } , {
             "fieldName": "evD",
             "type": "event_definition",
-            "value": "eventDefinition"
+            "value": "eventDefinition",
+            "fieldSettings": {
+              "convertType": "string"
+            }
           } ,{
             "fieldName": "profCreated",
             "type": "profile_created",
-            "convertType" : "DATE"
+            "fieldSettings": {
+              "convertType": "Date"
+            }
           },{
             "fieldName": "evCreated",
-            "type": "event_created"
+            "type": "event_created",
+            "fieldSettings": {
+              "convertType": "Date"
+            }
+
           },{
             "fieldName": "sesCreated",
-            "type": "session_created"
+            "type": "session_created",
+            "fieldSettings": {
+              "convertType": "Date"
+            }
           },
           {
             "fieldName": "url",
             "type": "event_data",
-            "valueRef": "event url"
+            "valueRef": "event url",
+            "fieldSettings": {
+              "convertType": "String"
+            }
           },
           {
             "fieldName": "url",
             "type": "attribute_data",
             "valueRef": "collectApp/Section/attribute url"
+          ,
+            "fieldSettings": {
+              "convertType": "String"
+            }
           },
           {
             "fieldName": "url",
             "type": "session_data",
-            "valueRef": "collectApp/Section/session url"
+            "valueRef": "session url",
+            "fieldSettings": {
+              "convertType": "String"
+            }
           }
         ]
       }

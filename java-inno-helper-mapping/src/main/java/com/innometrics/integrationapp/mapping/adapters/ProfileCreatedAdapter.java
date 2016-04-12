@@ -25,7 +25,7 @@ public class ProfileCreatedAdapter extends InnAdapter {
         if (date instanceof Date) {
             profile.setCreatedAt((Date) date);
         }else {
-            throw new MappingDataException("Profile createrdAt in field "+ fieldsEntry.getFieldName()+"must be DATE convert type");
+            throw new MappingDataException("Profile createrdAt in field "+ fieldsEntry.getFieldName()+" must be DATE convert type");
         }
     }
 

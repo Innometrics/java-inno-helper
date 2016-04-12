@@ -26,7 +26,7 @@ public class EventDataAdapter extends InnAdapter {
 
     @Override
     public void setValueToProfile(Profile profile, FieldsEntry fieldsEntry, Map<String, Object> map) throws MappingDataException {
-        profile.getSessions().get(0).getEvents().get(0).getData().put(fieldsEntry.getValueRef(), getDataAsJson(getValue(fieldsEntry, map)));
+        profile.getSessions().get(0).getEvents().get(0).putData(fieldsEntry.getValueRef(), getDataAsJson(getValue(fieldsEntry, map)));
     }
 
 }

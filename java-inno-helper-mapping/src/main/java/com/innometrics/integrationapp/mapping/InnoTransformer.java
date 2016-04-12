@@ -24,8 +24,8 @@ public class InnoTransformer {
 
     public InnoTransformer(InnoHelper innoHelper) throws IOException {
         this.innoHelper = innoHelper;
-        RulesEntry[] rulesEntries = this.innoHelper.getCustom(RULES, RulesEntry[].class);
-        for (RulesEntry rulesEntry : rulesEntries) {
+        RulesEntry[] rulesEntriesFromHelper = this.innoHelper.getCustom(RULES, RulesEntry[].class);
+        for (RulesEntry rulesEntry : rulesEntriesFromHelper) {
             this.rulesEntries.put(rulesEntry.getEvent(), rulesEntry);
         }
     }
