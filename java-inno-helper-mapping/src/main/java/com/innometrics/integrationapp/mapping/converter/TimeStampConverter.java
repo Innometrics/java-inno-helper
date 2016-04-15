@@ -13,25 +13,26 @@ public class TimeStampConverter extends InnConverter {
 
     @Override
     public Object convertValue(Object value, FieldsEntry fieldsEntry) {
+        Object result = null;
         if (value instanceof Long) {
-            return  value;
+            result= value;
         }
         if (value instanceof Date) {
-            return ((Date) value).getTime();
+            result=((Date) value).getTime();
         }
         String tmp = getAssString(value);
         if (fieldsEntry.getFieldSettings().isEmpty()) {
-            return Long.valueOf(tmp);
+            result= Long.valueOf(tmp);
         }
         String format = String.valueOf(fieldsEntry.getFieldSettings().get("timeFormat"));
         if (value instanceof String) {
             try {
-                return parceDate((String) value, format).getTime();
+                result= parceDate((String) value, format).getTime();
             } catch (ParseException e) {
-                return Long.valueOf(tmp);
+                result= Long.valueOf(tmp);
             }
         }
-        return null;
+        return result;
     }
 
      Date parceDate(String date, String format) throws ParseException {
