@@ -78,7 +78,7 @@ public class InnoHelperUtils {
         try {
             properties.load(url.openStream());
         } catch (IOException e) {
-            LOGGER.error("default.properties not found");
+            LOGGER.error("default.properties not found",e);
         }
         for (ConfigNames configName : ConfigNames.values()) {
             String res = System.getenv(configName.name());

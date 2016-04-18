@@ -17,9 +17,8 @@ import java.util.Map;
  * Created by killpack on 06.04.16.
  */
 public abstract class InnAdapter {
-    Logger logger = Logger.getLogger(InnoHelper.class);
     InnoHelper innoHelper;
-    public ProfileStreamHelper profileStreamHelper = new ProfileStreamHelper();
+    ProfileStreamHelper profileStreamHelper = new ProfileStreamHelper();
 
     public abstract Object getValueFromPS(ProfileStreamMessage profileStreamMessage, FieldsEntry fieldsEntry) throws MappingDataException;
 
