@@ -9,7 +9,6 @@ import com.innometrics.integrationapp.mapping.util.ProfileStreamHelper;
 import com.innometrics.integrationapp.model.Profile;
 import com.innometrics.integrationapp.model.ProfileStreamMessage;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
-import org.apache.log4j.Logger;
 
 import java.util.Map;
 
