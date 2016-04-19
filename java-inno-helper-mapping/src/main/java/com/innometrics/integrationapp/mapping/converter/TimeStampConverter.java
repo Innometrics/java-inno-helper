@@ -26,7 +26,7 @@ public class TimeStampConverter extends InnConverter {
             try {
                 result= parceDate((String) value, format).getTime();
             } catch (ParseException e) {
-                LOGGER.error("Conversation error ",e);
+                result= Long.valueOf((String)value);
             }
         }
         return result;
