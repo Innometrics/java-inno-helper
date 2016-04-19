@@ -23,7 +23,7 @@ public class DateConverter extends TimeStampConverter {
         try {
             return parceDate(tmp, format);
         } catch (ParseException e) {
-            logger.error("to date conversion error ",e);
+            LOGGER.error("to date conversion error ",e);
         }
         return null;
     }

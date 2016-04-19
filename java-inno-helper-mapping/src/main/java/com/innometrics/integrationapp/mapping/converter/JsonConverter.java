@@ -11,12 +11,12 @@ public class JsonConverter extends InnConverter {
 
     @Override
     public JsonElement convertValue(Object value, FieldsEntry fieldsEntry) {
+        JsonElement result = null;
         if (value instanceof JsonElement) {
-            return (JsonElement) value;
+            result= (JsonElement) value;
+        }else if (value instanceof String) {
+           result= InnoHelperUtils.getGson().fromJson((String) value, JsonElement.class);
         }
-        if (value instanceof String) {
-            InnoHelperUtils.getGson().fromJson((String) value, JsonElement.class);
-        }
-        return null;
+        return result;
     }
 }

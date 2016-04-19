@@ -14,22 +14,19 @@ public class TimeStampConverter extends InnConverter {
     @Override
     public Object convertValue(Object value, FieldsEntry fieldsEntry) {
         Object result = null;
+        String tmp = getAssString(value);
         if (value instanceof Long) {
             result= value;
-        }
-        if (value instanceof Date) {
+        }else if (value instanceof Date) {
             result=((Date) value).getTime();
-        }
-        String tmp = getAssString(value);
-        if (fieldsEntry.getFieldSettings().isEmpty()) {
+        }else if (fieldsEntry.getFieldSettings().isEmpty()) {
             result= Long.valueOf(tmp);
-        }
-        String format = String.valueOf(fieldsEntry.getFieldSettings().get("timeFormat"));
-        if (value instanceof String) {
+        }else if (value instanceof String) {
+            String format = String.valueOf(fieldsEntry.getFieldSettings().get("timeFormat"));
             try {
                 result= parceDate((String) value, format).getTime();
             } catch (ParseException e) {
-                result= Long.valueOf(tmp);
+                LOGGER.error("Conversation error ",e);
             }
         }
         return result;

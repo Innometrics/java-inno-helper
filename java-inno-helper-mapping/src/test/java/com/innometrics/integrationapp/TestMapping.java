@@ -2,22 +2,27 @@ package com.innometrics.integrationapp;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.innometrics.integrationapp.appsettings.FieldsEntry;
 import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.mapping.DataLevel;
 import com.innometrics.integrationapp.mapping.InnoTransformer;
 import com.innometrics.integrationapp.mapping.MappingDataException;
+import com.innometrics.integrationapp.mapping.converter.*;
 import com.innometrics.integrationapp.model.*;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 import static com.innometrics.integrationapp.mapping.DataLevel.*;
+
 /**
  * Created by killpack on 01.12.15.
  */
@@ -98,7 +103,7 @@ public class TestMapping {
     }
 
     @Test
-    public void testDataLevelfromProfile() throws MappingDataException, Exception {
+    public void testDataLevelfromProfile() throws Exception {
         String time = RandomStringUtils.randomAlphanumeric(12);
         String url = RandomStringUtils.random(10);
         String profileId = RandomStringUtils.randomNumeric(10);
@@ -166,7 +171,7 @@ public class TestMapping {
     }
 
     @Test
-    public void testDataLevelToProfile() throws MappingDataException, Exception {
+    public void testDataLevelToProfile() throws Exception {
         String time = RandomStringUtils.randomAlphanumeric(12);
         String url = RandomStringUtils.randomNumeric(10);
         String id = RandomStringUtils.randomNumeric(10);
@@ -194,18 +199,8 @@ public class TestMapping {
     }
 
     @Test
-    public void testDateConvert() throws MappingDataException, Exception {
+    public void testDateConvert() throws Exception {
         String time = "2015-01-01 11:11:11";
-        Profile profile = new Profile();
-        Event event = new Event();
-        Map<String, JsonElement> data = new HashMap<>();
-        data.put("time", new JsonPrimitive(time));
-        event.setData(data);
-        Session session = new Session();
-        session.setSection("section");
-        session.setCollectApp("collectApp");
-        session.addEvent(event);
-        profile.addSession(session);
         FieldsEntry fieldsEntry = new FieldsEntry();
         fieldsEntry.setType(DataLevel.EVENT_DATA.name());
         fieldsEntry.setFieldName("url");
@@ -216,15 +211,43 @@ public class TestMapping {
         fieldsEntry.setFieldSettings(fieldSettings);
         fieldsEntry.setValueRef("time");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(timeFormat);
-        InnoTransformer transformer = getTransformer("/testFieldToProfile.json");
-//        Assert.assertNotNull(transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
-//        Assert.assertEquals(simpleDateFormat.parse(time), transformer.getValue(new ProfileStreamMessage(profile), fieldsEntry));
+        DateConverter dateConverter = new DateConverter();
+        Object date = dateConverter.convertValue(time, fieldsEntry);
+        Date original = simpleDateFormat.parse(time);
+        Assert.assertEquals(date, original);
+        date = dateConverter.convertValue(original.getTime(), fieldsEntry);
+        Assert.assertEquals(date, original);
+    }
+
+    @Test
+    public void testTimeStampConvert() throws Exception {
+        String time = "2015-01-01 11:11:11";
+        FieldsEntry fieldsEntry = new FieldsEntry();
+        fieldsEntry.setType(DataLevel.EVENT_DATA.name());
+        fieldsEntry.setFieldName("url");
+        Map<String, Object> fieldSettings = new HashMap<>();
+        fieldSettings.put("convertType", "Date");
+        String timeFormat = "yyyy-MM-dd HH:mm:ss";
+        fieldSettings.put("timeFormat", timeFormat);
+        fieldsEntry.setFieldSettings(fieldSettings);
+        fieldsEntry.setValueRef("time");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(timeFormat);
+        TimeStampConverter dateConverter = new TimeStampConverter();
+        Date original = simpleDateFormat.parse(time);
+
+        Object date = dateConverter.convertValue(time, fieldsEntry);
+        Assert.assertEquals(date, original.getTime());
+        date = dateConverter.convertValue(original.getTime(), fieldsEntry);
+        Assert.assertEquals(date, original.getTime());
+        date = dateConverter.convertValue(original, fieldsEntry);
+        Assert.assertEquals(date, original.getTime());
+        date = dateConverter.convertValue(String.valueOf(original.getTime()), fieldsEntry);
+        Assert.assertEquals(date, original.getTime());
     }
 
 
-
     @Test
-    public void testMetaAndMacro() throws Exception, MappingDataException {
+    public void testMetaAndMacro() throws Exception {
         InnoTransformer innoTransformer = getTransformer("/testField.json");
         ProfileStreamMessage startProfile = InnoHelperUtils.getGson().fromJson(new FileReader(new File(getClass().getResource("/profileStreamMessage.json").getPath())), ProfileStreamMessage.class);
         Map<String, Object> stringObjectMap = innoTransformer.fromProfileStream(startProfile);
@@ -235,4 +258,51 @@ public class TestMapping {
         Assert.assertEquals("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 Safari/537.36", stringObjectMap.get("test6"));
         Assert.assertTrue(System.currentTimeMillis() >= Long.valueOf((String) stringObjectMap.get("test7")));
     }
+
+
+    @Test
+    public void tgetConverterDouble() {
+        DoubleConverter doubleConverter = new DoubleConverter();
+        FieldsEntry fieldsEntry = new FieldsEntry();
+        fieldsEntry.setType("test");
+        String s = "123.123123312";
+        Object o = doubleConverter.convertValue(s, fieldsEntry);
+        Assert.assertEquals(123.123123312, o);
+        Assert.assertTrue(o instanceof Double);
+        float d = 1.11221231231f;
+        Object o1 = doubleConverter.convertValue(d, fieldsEntry);
+        Assert.assertTrue(o1 instanceof Double);
+    }
+
+    @Test
+    public void tgetConverterIntejer() {
+        IntegerConverter integerConverter = new IntegerConverter();
+        FieldsEntry fieldsEntry = new FieldsEntry();
+        fieldsEntry.setType("test");
+        String s = "123";
+        Object o = integerConverter.convertValue(s, fieldsEntry);
+        Assert.assertEquals(123, o);
+        Assert.assertTrue(o instanceof Integer);
+        float d = 1.11221231231f;
+        Object o1 = integerConverter.convertValue(d, fieldsEntry);
+        Assert.assertTrue(o1 instanceof Integer);
+    }
+
+
+    @Test
+    public void tgetConverterJSON() {
+        JsonConverter jsonConverter = new JsonConverter();
+        FieldsEntry fieldsEntry = new FieldsEntry();
+        fieldsEntry.setType("test");
+        String s = "{\"a\":123}";
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("a", 123);
+        Object o = jsonConverter.convertValue(s, fieldsEntry);
+        Assert.assertEquals(jsonObject, o);
+        Assert.assertTrue(o instanceof JsonElement);
+        Object o1 = jsonConverter.convertValue(jsonObject, fieldsEntry);
+        Assert.assertEquals(o1, jsonObject);
+    }
+
+
 }

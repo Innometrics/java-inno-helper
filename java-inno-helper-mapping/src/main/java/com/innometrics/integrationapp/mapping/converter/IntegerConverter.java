@@ -8,10 +8,10 @@ import com.innometrics.integrationapp.appsettings.FieldsEntry;
 public class IntegerConverter extends InnConverter {
 
     @Override
-    public Long convertValue(Object value, FieldsEntry fieldsEntry) {
+    public Integer convertValue(Object value, FieldsEntry fieldsEntry) {
         if (value instanceof Number) {
-            return ((Number) value).longValue();
+            return ((Number) value).intValue();
         }
-        return Long.valueOf(getAssString(value));
+        return Integer.valueOf(getAssString(value));
     }
 }

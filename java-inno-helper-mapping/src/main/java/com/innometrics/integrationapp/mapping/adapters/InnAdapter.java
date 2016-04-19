@@ -31,7 +31,6 @@ public abstract class InnAdapter {
         return valueRef;
     }
 
-
     protected Object convertValue(Object value, FieldsEntry fieldsEntry) {
         if (value == null || "null".equals(value)) {
             return null;
