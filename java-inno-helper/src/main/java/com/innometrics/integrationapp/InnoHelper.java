@@ -93,7 +93,7 @@ public class InnoHelper {
         return app;
     }
 
-    public void addChengeListeners(AppConfigChangeListener changeListener) {
+    public void addChangeListeners(AppConfigChangeListener changeListener) {
         this.changeListeners.add(changeListener);
     }
 
