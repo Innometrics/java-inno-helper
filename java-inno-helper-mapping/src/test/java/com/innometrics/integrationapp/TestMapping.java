@@ -10,6 +10,7 @@ import com.innometrics.integrationapp.mapping.DataLevel;
 import com.innometrics.integrationapp.mapping.InnoTransformer;
 import com.innometrics.integrationapp.mapping.MappingDataException;
 import com.innometrics.integrationapp.mapping.converter.*;
+import com.innometrics.integrationapp.mapping.util.ProfileStreamHelper;
 import com.innometrics.integrationapp.model.*;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -31,11 +32,7 @@ import static com.innometrics.integrationapp.mapping.DataLevel.*;
 public class TestMapping {
 
     InnoTransformer getTransformer(String settingsFile) throws Exception {
-        InnoHelper innoHelper = Mockito.mock(InnoHelper.class);
-        RulesEntry[] rulesEntries = new Gson().fromJson(new FileReader(new File(getClass().getResource(settingsFile).getPath())), RulesEntry[].class);
-        Mockito.when(innoHelper.getCustom(InnoTransformer.RULES, RulesEntry[].class)).thenReturn(rulesEntries);
-        InnoTransformer innoTransformer = new InnoTransformer(innoHelper);
-        return innoTransformer;
+        return new InnoTransformer(ProfileStreamHelper.createMockHelper(getClass().getResource(settingsFile).getPath()));
     }
 
     Profile getProfile(String settingsFile) throws FileNotFoundException {
