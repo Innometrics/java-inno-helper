@@ -74,13 +74,15 @@ public class TestMapping {
         profile.addSession(session);
         final ProfileStreamMessage startProfile = InnoHelperUtils.getGson().fromJson(new FileReader(new File(getClass().getResource("/profileStreamMessage.json").getPath())), ProfileStreamMessage.class);
         startProfile.setProfile(profile);
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 1; i++) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        Map<String, Object> stringObjectMap = innoTransformer.fromProfileStream(startProfile);
-                        Assert.assertEquals("TestValue", stringObjectMap.get("test"));
+                        Map<RulesEntry,Map<String, Object>> stringObjectMap = innoTransformer.fromProfileStreamMultiRule( startProfile);
+                        for (Map.Entry<RulesEntry, Map<String, Object>> rulesEntryMapEntry : stringObjectMap.entrySet()) {
+                            Assert.assertEquals("TestValue", rulesEntryMapEntry.getValue().get("test"));
+                        }
                     } catch (MappingDataException e) {
                         e.printStackTrace();
                     }
@@ -247,13 +249,16 @@ public class TestMapping {
     public void testMetaAndMacro() throws Exception {
         InnoTransformer innoTransformer = getTransformer("/testField.json");
         ProfileStreamMessage startProfile = InnoHelperUtils.getGson().fromJson(new FileReader(new File(getClass().getResource("/profileStreamMessage.json").getPath())), ProfileStreamMessage.class);
-        Map<String, Object> stringObjectMap = innoTransformer.fromProfileStream(startProfile);
-        Assert.assertEquals("testCollectApp", stringObjectMap.get("test2"));
-        Assert.assertEquals("testSection", stringObjectMap.get("test3"));
-        Assert.assertEquals(null, stringObjectMap.get("test4"));
-        Assert.assertEquals("188.112.192.214", stringObjectMap.get("test5"));
-        Assert.assertEquals("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 Safari/537.36", stringObjectMap.get("test6"));
-        Assert.assertTrue(System.currentTimeMillis() >= Long.valueOf((String) stringObjectMap.get("test7")));
+        Map<RulesEntry,Map<String, Object>> stringObjectMap = innoTransformer.fromProfileStreamMultiRule(startProfile);
+        for (Map.Entry<RulesEntry, Map<String, Object>> rulesEntryMapEntry : stringObjectMap.entrySet()) {
+
+        Assert.assertEquals("testCollectApp", rulesEntryMapEntry.getValue().get("test2"));
+        Assert.assertEquals("testSection", rulesEntryMapEntry.getValue().get("test3"));
+        Assert.assertEquals(null, rulesEntryMapEntry.getValue().get("test4"));
+        Assert.assertEquals("188.112.192.214", rulesEntryMapEntry.getValue().get("test5"));
+        Assert.assertEquals("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 Safari/537.36", rulesEntryMapEntry.getValue().get("test6"));
+        Assert.assertTrue(System.currentTimeMillis() >= Long.valueOf((String) rulesEntryMapEntry.getValue().get("test7")));
+        }
     }
 
 
