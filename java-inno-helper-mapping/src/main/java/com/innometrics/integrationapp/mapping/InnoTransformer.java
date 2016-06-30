@@ -39,7 +39,12 @@ public class InnoTransformer {
 
     public Map<RulesEntry,Map<String, Object>> fromProfileStreamMultiRule(ProfileStreamMessage profileStreamMessage) throws MappingDataException {
         Map<RulesEntry,Map<String, Object>> result = new HashMap<>();
-        List<RulesEntry> rulesEntrys = rulesEntries.get(InnoHelperUtils.getFullFirstEventName(profileStreamMessage.getProfile()));
+        String fullFirstEventName = InnoHelperUtils.getFullFirstEventName(profileStreamMessage.getProfile());
+        List<RulesEntry> rulesEntrys = rulesEntries.get(fullFirstEventName);
+        if (rulesEntrys == null ){
+            LOGGER.info("there are no rules for the event " +fullFirstEventName);
+            return result;
+        }
         for (RulesEntry entry : rulesEntrys) {
             Map<String, Object> tmp = fromProfileStream(entry, profileStreamMessage);
             if (!tmp.isEmpty()){
@@ -54,7 +59,6 @@ public class InnoTransformer {
 
     Map<String, Object> fromProfileStream(RulesEntry rulesEntry, ProfileStreamMessage profileStreamMessage) throws MappingDataException {
         Map<String, Object> result = new HashMap<>();
-//        RulesEntry rulesEntry = rulesEntries.get(InnoHelperUtils.getFullFirstEventName(profile));
         if (rulesEntry == null) {
             return result;
         }
@@ -75,7 +79,12 @@ public class InnoTransformer {
     //temporary fix all data in profile
     public Map<RulesEntry,Map<String, Object>> fromFullProfileStreamMultiRule(ProfileStreamMessage profileStreamMessage) throws MappingDataException {
         Map<RulesEntry,Map<String, Object>> result = new HashMap<>();
-        List<RulesEntry> rulesEntrys = rulesEntries.get(InnoHelperUtils.getFullFirstEventName(profileStreamMessage.getProfile()));
+        String fullFirstEventName = InnoHelperUtils.getFullFirstEventName(profileStreamMessage.getProfile());
+        List<RulesEntry> rulesEntrys = rulesEntries.get(fullFirstEventName);
+        if (rulesEntrys == null ){
+            LOGGER.info("there are no rules for the event " +fullFirstEventName);
+            return result;
+        }
         for (RulesEntry entry : rulesEntrys) {
             Map<String, Object> tmp = fromFullProfile(entry, profileStreamMessage);
             if (!tmp.isEmpty()){
