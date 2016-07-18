@@ -27,34 +27,34 @@ public class InnoTransformer {
     public InnoTransformer(InnoHelper innoHelper) throws IOException {
         this.innoHelper = innoHelper;
         RulesEntry[] rulesEntriesFromHelper = this.innoHelper.getCustom(RULES, RulesEntry[].class);
-        for (RulesEntry rulesEntry : rulesEntriesFromHelper) {
-            List<RulesEntry> tmp = rulesEntries.get(rulesEntry.getEvent());
-            if (tmp == null) {
-                tmp = new ArrayList<>();
-                this.rulesEntries.put(rulesEntry.getEvent(), tmp);
+        if (rulesEntriesFromHelper != null) {
+            for (RulesEntry rulesEntry : rulesEntriesFromHelper) {
+                List<RulesEntry> tmp = rulesEntries.get(rulesEntry.getEvent());
+                if (tmp == null) {
+                    tmp = new ArrayList<>();
+                    this.rulesEntries.put(rulesEntry.getEvent(), tmp);
+                }
+                tmp.add(rulesEntry);
             }
-            tmp.add(rulesEntry);
         }
     }
 
-    public Map<RulesEntry,Map<String, Object>> fromProfileStreamMultiRule(ProfileStreamMessage profileStreamMessage) throws MappingDataException {
-        Map<RulesEntry,Map<String, Object>> result = new HashMap<>();
+    public Map<RulesEntry, Map<String, Object>> fromProfileStreamMultiRule(ProfileStreamMessage profileStreamMessage) throws MappingDataException {
+        Map<RulesEntry, Map<String, Object>> result = new HashMap<>();
         String fullFirstEventName = InnoHelperUtils.getFullFirstEventName(profileStreamMessage.getProfile());
         List<RulesEntry> rulesEntrys = rulesEntries.get(fullFirstEventName);
-        if (rulesEntrys == null ){
-            LOGGER.info("there are no rules for the event " +fullFirstEventName);
+        if (rulesEntrys == null) {
+            LOGGER.info("there are no rules for the event " + fullFirstEventName);
             return result;
         }
         for (RulesEntry entry : rulesEntrys) {
             Map<String, Object> tmp = fromProfileStream(entry, profileStreamMessage);
-            if (!tmp.isEmpty()){
+            if (!tmp.isEmpty()) {
                 result.put(entry, tmp);
             }
         }
         return result;
     }
-
-
 
 
     Map<String, Object> fromProfileStream(RulesEntry rulesEntry, ProfileStreamMessage profileStreamMessage) throws MappingDataException {
@@ -77,34 +77,34 @@ public class InnoTransformer {
     }
 
     //temporary fix all data in profile
-    public Map<RulesEntry,Map<String, Object>> fromFullProfileStreamMultiRule(ProfileStreamMessage profileStreamMessage) throws MappingDataException {
-        Map<RulesEntry,Map<String, Object>> result = new HashMap<>();
+    public Map<RulesEntry, Map<String, Object>> fromFullProfileStreamMultiRule(ProfileStreamMessage profileStreamMessage) throws MappingDataException {
+        Map<RulesEntry, Map<String, Object>> result = new HashMap<>();
         String fullFirstEventName = InnoHelperUtils.getFullFirstEventName(profileStreamMessage.getProfile());
         List<RulesEntry> rulesEntrys = rulesEntries.get(fullFirstEventName);
-        if (rulesEntrys == null ){
-            LOGGER.info("there are no rules for the event " +fullFirstEventName);
+        if (rulesEntrys == null) {
+            LOGGER.info("there are no rules for the event " + fullFirstEventName);
             return result;
         }
         for (RulesEntry entry : rulesEntrys) {
             Map<String, Object> tmp = fromFullProfile(entry, profileStreamMessage);
-            if (!tmp.isEmpty()){
+            if (!tmp.isEmpty()) {
                 result.put(entry, tmp);
             }
         }
         return result;
     }
 
-    public Map<String, Object> fromFullProfile(RulesEntry rulesEntry,ProfileStreamMessage profileStreamMessage) throws MappingDataException {
+    public Map<String, Object> fromFullProfile(RulesEntry rulesEntry, ProfileStreamMessage profileStreamMessage) throws MappingDataException {
         Map<String, Object> dataMap = null;
         try {
-            dataMap = fromProfileStream(rulesEntry,profileStreamMessage);
+            dataMap = fromProfileStream(rulesEntry, profileStreamMessage);
             if (!validateData(dataMap)) {
                 Profile profile = innoHelper.getProfile(profileStreamMessage.getProfile().getId());
                 List<Session> session = new ArrayList();
                 session.add(getSingleSession(profileStreamMessage.getProfile(), profile));
                 profile.setSessions(session);
                 profileStreamMessage.setProfile(profile);
-                dataMap = fromProfileStream(rulesEntry,profileStreamMessage);
+                dataMap = fromProfileStream(rulesEntry, profileStreamMessage);
             }
         } catch (IOException | MappingDataException e) {
             LOGGER.error(e.getMessage(), e);
