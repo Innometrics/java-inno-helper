@@ -7,5 +7,5 @@ public enum MetaConstant {
      COMPANY_ID,
     BUCKET_ID,
     SECTION,
-    COLLECTAPP
+    COLLECT_APP
 }

@@ -6,10 +6,10 @@
     <parent>
         <artifactId>java-inno-helper-root</artifactId>
         <groupId>com.innometrics.integration</groupId>
-        <version>0.1.9</version>
+        <version>0.1.10</version>
     </parent>
     <artifactId>java-inno-helper</artifactId>
-    <version>0.1.9</version>
+    <version>0.1.10</version>
     <repositories>
         <repository>
             <id>innometrics</id>

@@ -199,15 +199,21 @@ public class InnoHelper {
     }
 
     public <T> T getCustom(String key, Class<T> aClass) throws IOException {
-        return InnoHelperUtils.getGson().fromJson(getCustom(key), aClass);
+        JsonElement jsonElement = getCustom(key);
+        return jsonElement != null ? InnoHelperUtils.getGson().fromJson(jsonElement, aClass) : null;
     }
 
     public RulesEntry[] getRulesEntries() throws IOException {
-        return getCustom("rules", RulesEntry[].class);
+       return getCustom("rules", RulesEntry[].class);
     }
 
     public JsonElement getCustom(String key) throws IOException {
-        return getApp().getCustom().get(key);
+        App appTmp = getApp();
+        if (appTmp == null) {
+            LOGGER.error("App Settings is Empty");
+            return null;
+        }
+        return appTmp.getCustom().get(key);
     }
 
 

@@ -29,7 +29,7 @@ public class MetaAdapter extends InnAdapter {
                 res = innoHelper.getCompanyId();
                 break;
             }
-            case COLLECTAPP: {
+            case COLLECT_APP: {
                 res = profileStreamHelper.getSession(profileStreamMessage).getCollectApp();
                 break;
             }

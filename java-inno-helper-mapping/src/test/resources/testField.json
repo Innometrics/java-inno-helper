@@ -22,7 +22,7 @@
             "fieldSettings": {
               "convertType": "string"
             },
-            "valueRef": "collectApp"
+            "valueRef": "COLLECT_APP"
           },{
             "fieldName": "test3",
             "type": "meta",
