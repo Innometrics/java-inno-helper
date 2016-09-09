@@ -95,19 +95,23 @@ public class InnoTransformer {
     }
 
     public Map<String, Object> fromFullProfile(RulesEntry rulesEntry, ProfileStreamMessage profileStreamMessage) throws MappingDataException {
-        Map<String, Object> dataMap = null;
+        Map<String, Object> dataMap = new HashMap<>();
         try {
             dataMap = fromProfileStream(rulesEntry, profileStreamMessage);
-            if (!validateData(dataMap)) {
+        } catch (MappingDataException e) {
+            LOGGER.info("load full profile from DH...");
+        }
+        if (dataMap == null || !validateData(dataMap)) {
+            try {
                 Profile profile = innoHelper.getProfile(profileStreamMessage.getProfile().getId());
                 List<Session> session = new ArrayList();
                 session.add(getSingleSession(profileStreamMessage.getProfile(), profile));
                 profile.setSessions(session);
                 profileStreamMessage.setProfile(profile);
                 dataMap = fromProfileStream(rulesEntry, profileStreamMessage);
+            } catch (MappingDataException | IOException e) {
+                LOGGER.error(e.getMessage(), e);
             }
-        } catch (IOException | MappingDataException e) {
-            LOGGER.error(e.getMessage(), e);
         }
         return dataMap;
     }
@@ -131,6 +135,9 @@ public class InnoTransformer {
     }
 
     boolean validateData(Map<String, Object> dataMap) {
+        if (dataMap.isEmpty()) {
+            return false;
+        }
         for (Object o : dataMap.values()) {
             if (o == null) return false;
         }

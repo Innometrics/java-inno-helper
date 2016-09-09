@@ -9,7 +9,7 @@
         <version>0.1.10</version>
     </parent>
     <artifactId>java-inno-helper</artifactId>
-    <version>0.1.10</version>
+    <version>0.1.11</version>
     <repositories>
         <repository>
             <id>innometrics</id>
