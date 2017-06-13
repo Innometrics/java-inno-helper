@@ -1,5 +1,6 @@
 package com.innometrics.integrationapp;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -7,6 +8,8 @@ import com.innometrics.integrationapp.appsettings.RulesEntry;
 import com.innometrics.integrationapp.model.App;
 import com.innometrics.integrationapp.model.Profile;
 import com.innometrics.integrationapp.model.Segment;
+import com.innometrics.integrationapp.scheduler.SchedulerTask;
+import com.innometrics.integrationapp.scheduler.SchedulerTaskException;
 import com.innometrics.integrationapp.utils.InnoHelperUtils;
 import com.innometrics.integrationapp.utils.RestURI;
 import com.innometrics.integrationapp.utils.SegmentUtil;
@@ -42,6 +45,7 @@ public class InnoHelper {
     private volatile long lastGetConfigTime;
     volatile App app;
     String companyId;
+    String fld_schedulerApiHost;
     String bucketId;
     String host;
     String appKey;
@@ -58,6 +62,7 @@ public class InnoHelper {
         appID = getOrError(config, INNO_APP_ID.name());
         bucketId = getOrError(config, INNO_BUCKET_ID.name());
         companyId = getOrError(config, INNO_COMPANY_ID.name());
+        fld_schedulerApiHost = config.get(schedulerApiHost.name());
         port = Integer.valueOf(config.containsKey(INNO_API_PORT.name()) ? config.get(INNO_API_PORT.name()) : DEFAULT_PORT);
         cacheSize = Integer.valueOf(config.get(CACHE_SIZE) != null ? config.get(CACHE_SIZE) : DEFAULT_SIZE);
         cacheTTL = Integer.valueOf(config.get(CACHE_TTL) != null ? config.get(CACHE_TTL) : DEFAULT_TTL);
@@ -207,6 +212,28 @@ public class InnoHelper {
        return getCustom("rules", RulesEntry[].class);
     }
 
+    private String getSchedulerApiUrl(String taskId) throws SchedulerTaskException {
+        if (fld_schedulerApiHost==null || fld_schedulerApiHost.isEmpty()){
+            throw new SchedulerTaskException("schedulerApiHost Should not be empty");
+        }
+        return String.format("%s/scheduler/%s%s?token=%s", fld_schedulerApiHost, getSchedulerId(), taskId != null && !taskId.isEmpty() ? '/' + taskId : "", getAppKey());
+    }
+
+    private String getSchedulerId() {
+        return getCompanyId() + "-" + getBucketId() + "-" + getAppID();
+    }
+
+    public boolean addTask(SchedulerTask schedulerTask) throws SchedulerTaskException, IOException {
+        if (schedulerTask.validate()) {
+            String url = getSchedulerApiUrl(null);
+            RequestBody requestBody = RequestBody.create(JSON, InnoHelperUtils.getGson().toJson(schedulerTask));// todo exclude null fields
+            Request request = new Request.Builder().url(url).post(requestBody).build();
+            Response response = httpClient.newCall(request).execute();
+            processResponse(response,SchedulerTask[].class);
+        }
+        return true;
+    }
+
     public JsonElement getCustom(String key) throws IOException {
         App appTmp = getApp();
         if (appTmp == null) {
@@ -240,4 +267,5 @@ public class InnoHelper {
     public int getPort() {
         return port;
     }
+
 }

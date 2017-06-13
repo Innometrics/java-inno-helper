@@ -11,5 +11,6 @@ public enum ConfigNames {
     INNO_API_HOST,
     INNO_API_PORT,
     JDBC_CONNECTION_STRING,
-    DATABASE_URL
+    DATABASE_URL,
+    schedulerApiHost
 }
