@@ -6,11 +6,11 @@
 
     <groupId>com.innometrics.integration</groupId>
     <artifactId>java-inno-helper-root</artifactId>
-    <version>0.1.10</version>
+    <version>0.1.12-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
-        <java.version>0.1.10</java.version>
+        <java.version>0.1.12</java.version>
     </properties>
 
     <repositories>

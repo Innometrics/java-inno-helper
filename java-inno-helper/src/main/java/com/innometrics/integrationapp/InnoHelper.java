@@ -62,7 +62,7 @@ public class InnoHelper {
         appID = getOrError(config, INNO_APP_ID.name());
         bucketId = getOrError(config, INNO_BUCKET_ID.name());
         companyId = getOrError(config, INNO_COMPANY_ID.name());
-        fld_schedulerApiHost = config.get(schedulerApiHost.name());
+        fld_schedulerApiHost = config.get(INNO_SCHEDULER_API_HOST.name());
         port = Integer.valueOf(config.containsKey(INNO_API_PORT.name()) ? config.get(INNO_API_PORT.name()) : DEFAULT_PORT);
         cacheSize = Integer.valueOf(config.get(CACHE_SIZE) != null ? config.get(CACHE_SIZE) : DEFAULT_SIZE);
         cacheTTL = Integer.valueOf(config.get(CACHE_TTL) != null ? config.get(CACHE_TTL) : DEFAULT_TTL);
@@ -209,11 +209,11 @@ public class InnoHelper {
     }
 
     public RulesEntry[] getRulesEntries() throws IOException {
-       return getCustom("rules", RulesEntry[].class);
+        return getCustom("rules", RulesEntry[].class);
     }
 
     private String getSchedulerApiUrl(String taskId) throws SchedulerTaskException {
-        if (fld_schedulerApiHost==null || fld_schedulerApiHost.isEmpty()){
+        if (fld_schedulerApiHost == null || fld_schedulerApiHost.isEmpty()) {
             throw new SchedulerTaskException("schedulerApiHost Should not be empty");
         }
         return String.format("%s/scheduler/%s%s?token=%s", fld_schedulerApiHost, getSchedulerId(), taskId != null && !taskId.isEmpty() ? '/' + taskId : "", getAppKey());
@@ -229,9 +229,34 @@ public class InnoHelper {
             RequestBody requestBody = RequestBody.create(JSON, InnoHelperUtils.getGson().toJson(schedulerTask));// todo exclude null fields
             Request request = new Request.Builder().url(url).post(requestBody).build();
             Response response = httpClient.newCall(request).execute();
-            processResponse(response,SchedulerTask[].class);
+            if (!response.isSuccessful()) {
+                throw new SchedulerTaskException(response.body().string());
+            }
+            return response.isSuccessful();
         }
-        return true;
+        return false;
+    }
+
+    public boolean deleteTask(String taskId) throws SchedulerTaskException, IOException {
+        String url = getSchedulerApiUrl(taskId);
+        Request request = new Request.Builder().url(url).delete().build();
+        Response response = httpClient.newCall(request).execute();
+        if (!response.isSuccessful()) {
+            throw new SchedulerTaskException(response.body().string());
+        }
+        return response.isSuccessful();
+    }
+
+    public SchedulerTask[] getTasks() throws SchedulerTaskException, IOException {
+        String url = getSchedulerApiUrl(null);
+        Request request = new Request.Builder().url(url).get().build();
+        Response response = httpClient.newCall(request).execute();
+        if (response.isSuccessful()) {
+            return InnoHelperUtils.getGson().fromJson(response.body().string(), SchedulerTask[].class);
+        } else {
+            LOGGER.error("http error :" + response.code() + " [" + response.message() + "]");
+            throw new SchedulerTaskException(response.body().string());
+        }
     }
 
     public JsonElement getCustom(String key) throws IOException {
