@@ -8,7 +8,7 @@ public class SchedulerTask {
     String method; // required
     String id;
     String payload;
-    Long dalay;
+    Long delay;
     Long timestamp;
     long created;
 
@@ -44,12 +44,12 @@ public class SchedulerTask {
         this.payload = payload;
     }
 
-    public long getDalay() {
-        return dalay;
+    public long getDelay() {
+        return delay;
     }
 
-    public void setDalay(long dalay) {
-        this.dalay = dalay;
+    public void setDelay(long delay) {
+        this.delay = delay;
     }
 
     public long getTimestamp() {
@@ -72,7 +72,7 @@ public class SchedulerTask {
         if (endpoint == null || endpoint.isEmpty() || method == null || method.isEmpty()) {
             throw new SchedulerTaskException("\"endpoint\" and \"method\" Should not be empty");
         }
-        if (timestamp != null && dalay != null) {
+        if (timestamp != null && delay != null) {
             throw new SchedulerTaskException("You should use only one param: timestamp or delay'");
         }
         return true;
